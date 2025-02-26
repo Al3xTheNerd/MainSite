@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATN - {{ request.path }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link href="{{url_for('static', filename='css/index.css')}}" type="text/css" rel="stylesheet">
+    <meta content="ATN - {{ request.path }}" property="og:title" />
+    <meta content="Basically a portfolio." property="og:description" />
+    <meta content="https://www.atn.gg" property="og:url" />
+    <meta content="	https://www.atn.gg/static/images/logo256.png" property="og:image" />
+    <meta content="#43B581" data-react-helmet="true" name="theme-color" />
+    <link rel="apple-touch-icon" sizes="180x180" href="{{url_for('static', filename='favicons/apple-touch-icon.png')}}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{url_for('static', filename='favicons/favicon-32x32.png')}}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{url_for('static', filename='favicons/favicon-16x16.png')}}">
+    <link rel="manifest" href="{{url_for('static', filename='favicons/site.webmanifest')}}">
+</head>
+
+<body>
+    <nav class="navbar navbar-light navbar-expand-sm bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static',filename='images/logo256.png') }}" width="32" height="32">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    {% for loc, name in [('index', "Home")] %}
+                    {% if request.path == url_for(loc) %}
+                    <li class="nav-item"><a class="nav-link active" aria-current="page"
+                            href="{{ url_for(loc) }}">{{name}}</a></li>
+                    {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for(loc) }}">{{name}}</a></li>
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-3">
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+        {% block content %} {% endblock %}
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
