@@ -10,4 +10,6 @@ div.cont {
 }
 div.card {
     border-radius: 0;
+    border-color: white;
+    border-width: 1px;
 }
