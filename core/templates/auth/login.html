@@ -1,0 +1,34 @@
+{% extends "core_layout.html" %}
+{% block content %}
+<div class="container text-center results">
+    <div class="row">
+
+
+
+        <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3 extra-pad-top">
+            <div class="give-preview-text-outer">
+                <div class="give-preview-text w-100">
+                    <div class="give-preview-text-inner">
+                        <form method="POST" action="/login">
+                            <div class="form-floating mb-3">
+                                <input type="email" class="form-control" name='email' id="emailGroup"
+                                    placeholder="Your Email">
+                                <label for="emailGroup">Your Email</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input type="password" class="form-control" name='password' id="passwordGroup"
+                                    placeholder="Password">
+                                <label for="passwordGroup">Password</label>
+                            </div>
+                            <input type="checkbox" class="btn-check" name='remember' id="btn-check-outlined" autocomplete="">
+                            <label class="btn btn-outline-info" for="btn-check-outlined">Remember Me</label>
+                            <button class="btn btn-primary mb-1" type="submit">Login</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
