@@ -54,17 +54,26 @@ def signup_post():
     if not password or len(password) < 8:
         errorsToFlash.append("Password must be at least 8 characters.")
 
+    # Check for any errors found previously, and show them to the user as needed.
     if len(errorsToFlash) > 0:
         for error in errorsToFlash:
             flash(error)
         return redirect(url_for('signup'))
     
+    # Make the user if no issues are found.
     new_user = User(username=username, password=generate_password_hash(password, method='pbkdf2:sha256')) # type: ignore
     
+    # If the user is the first to be entered into the database, make them an admin.
+    if User.query.count() == 0:
+        new_user.adminPermissions = 1
+    
+    # Commit
     db.session.add(new_user)
     db.session.commit()
+    
+    # If first user, send a notification that they are the site admin.
     if User.query.count() == 1:
-        flash("First user created with Admin Permissions", "info")
+        flash("First user created with Admin Permissions", "dark")
     return redirect(url_for('login'))
 
 @app.route('/logout')
