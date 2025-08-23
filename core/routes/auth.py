@@ -40,22 +40,26 @@ def signup_post():
     username = request.form.get('username')
     password = request.form.get('password')
     
+    # List of errors
+    errorsToFlash = []
+    
     # Check to see if user info Exists already.
     userByUsername = User.query.filter_by(username = username).first()
     if userByUsername:
-        flash('Username already in use.')
-        return redirect(url_for('signup'))
+        errorsToFlash.append("Username already in use.")
     
     # Verify valid information.
+    if not username or len(username) < 3 or len(username) > 16:
+        errorsToFlash.append("Username must be at least 3 characters, and no more than 16 characters.")
     if not password or len(password) < 8:
-        flash('Password must be at least 8 characters.')
-        return redirect(url_for('signup'))
-    if not username or len(username) < 3:
-        flash('Username must be at least 8 characters.')
+        errorsToFlash.append("Password must be at least 8 characters.")
+
+    if len(errorsToFlash) > 0:
+        for error in errorsToFlash:
+            flash(error)
         return redirect(url_for('signup'))
     
-    
-    new_user = User(username=username, password=generate_password_hash(password, method='pbkdf2:sha256'))
+    new_user = User(username=username, password=generate_password_hash(password, method='pbkdf2:sha256')) # type: ignore
     
     db.session.add(new_user)
     db.session.commit()
