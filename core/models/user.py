@@ -6,4 +6,4 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
     username = db.Column(db.String(1000))
-    permissions = db.Column(db.Integer)
+    adminPermissions = db.Column(db.Integer)
