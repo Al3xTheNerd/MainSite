@@ -18,7 +18,7 @@ def login_post():
     username = request.form.get('username')
     password = request.form.get('password')
     remember = True if request.form.get('remember') else False
-    user: User | None = User.query.filter(or_(User.email == username, User.username == username)).first()
+    user: User | None = User.query.filter_by(username=username).first()
 
     # check if user actually exists
     # take the user supplied password, hash it, and compare it to the hashed password in database
@@ -36,20 +36,31 @@ def signup():
 
 @app.route('/signup', methods=['POST'])
 def signup_post():
-    email = request.form.get('email')
+    # Get info from Form
     username = request.form.get('username')
     password = request.form.get('password')
-    user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
-    if user: # if a user is found, we want to redirect back to signup page so user can try again  
-        flash('Email address already exists')
+    
+    # Check to see if user info Exists already.
+    userByUsername = User.query.filter_by(username = username).first()
+    if userByUsername:
+        flash('Username already in use.')
         return redirect(url_for('signup'))
-    # create new user with the form data. Hash the password so plaintext version isn't saved.
-    new_user = User(email=email, username=username, password=generate_password_hash(password, method='pbkdf2:sha256')) # type: ignore
-    # add the new user to the database
+    
+    # Verify valid information.
+    if not password or len(password) < 8:
+        flash('Password must be at least 8 characters.')
+        return redirect(url_for('signup'))
+    if not username or len(username) < 3:
+        flash('Username must be at least 8 characters.')
+        return redirect(url_for('signup'))
+    
+    
+    new_user = User(username=username, password=generate_password_hash(password, method='pbkdf2:sha256'))
+    
     db.session.add(new_user)
     db.session.commit()
     if User.query.count() == 1:
-        flash("Admin User successfully created!", "info")
+        flash("First user created with Admin Permissions", "info")
     return redirect(url_for('login'))
 
 @app.route('/logout')

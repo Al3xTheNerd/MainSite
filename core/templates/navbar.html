@@ -1,0 +1,48 @@
+<nav class="navbar navbar-dark navbar-expand-md bg-dark"">
+        <div class=" container-fluid">
+    <a class="navbar-brand" href="{{ url_for('index') }}">
+        <img src="{{ url_for('static',filename='images/logo256.png') }}" width="32" height="32" alt="ATN Logo.sss">
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto">
+            {% for loc, name in [('index', "Home")] %}
+            {% if request.path == url_for(loc) %}
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{ url_for(loc) }}">{{name}}</a>
+            </li>
+            {% else %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for(loc) }}">{{name}}</a></li>
+            {% endif %}
+            {% endfor %}
+
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                    Admin
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark">
+                    {% if current_user.is_authenticated %}
+                    {% set l = [('logout', "Logout")] | list%}
+                    {% else %}
+                    {% set l = [('login', "Login")] %}
+                    {%endif%}
+                    {% for loc, name in l %}
+                    {% if loc is false %}
+                    <div class="dropdown-divider"></div>
+                    {% else %}
+                    {% if request.path == url_for(loc) %}
+                    <li><a class="dropdown-item active" href="{{ url_for(loc) }}">{{name}}</a></li>
+                    {% else %}
+                    <li><a class="dropdown-item" href="{{ url_for(loc) }}">{{name}}</a></li>
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+            </li>
+        </ul>
+    </div>
+    </div>
+</nav>

@@ -10,9 +10,9 @@
     <link href="{{url_for('static', filename='css/index.css')}}" type="text/css" rel="stylesheet">
     {% set path = request.path %}
     {% if path in PrettyRoutes %}
-        {% set sub = PrettyRoutes[path] %}
+    {% set sub = PrettyRoutes[path] %}
     {% else %}
-        {% set sub = path %}
+    {% set sub = path %}
     {% endif %}
 
     <title>ATN - {{ sub }}</title>
@@ -21,59 +21,13 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-dark navbar-expand-sm bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
-                <img src="{{ url_for('static',filename='images/logo256.png') }}" width="32" height="32" alt="ATN Logo.sss">
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    {% for loc, name in [('index', "Home")] %}
-                    {% if request.path == url_for(loc) %}
-                    <li class="nav-item"><a class="nav-link active" aria-current="page"
-                            href="{{ url_for(loc) }}">{{name}}</a></li>
-                    {% else %}
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for(loc) }}">{{name}}</a></li>
-                    {% endif %}
-                    {% endfor %}
-
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                            Admin
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-dark">
-                            {% if current_user.is_authenticated %}
-                            {% set l = [('logout', "Logout")] | list%}
-                            {% else %}
-                            {% set l = [('login', "Login")] %}
-                            {%endif%}
-                            {% for loc, name in l %}
-                            {% if loc is false %}
-                            <div class="dropdown-divider"></div>
-                            {% else %}
-                            {% if request.path == url_for(loc) %}
-                            <li><a class="dropdown-item active" href="{{ url_for(loc) }}">{{name}}</a></li>
-                            {% else %}
-                            <li><a class="dropdown-item" href="{{ url_for(loc) }}">{{name}}</a></li>
-                            {% endif %}
-                            {% endif %}
-                            {% endfor %}
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    <div class="cont mt-3 mb-3">
-        {% for category, message in get_flashed_messages(with_categories=true) %}
-        <div class="alert alert-{{ category }}">{{ message | safe }}</div>
-        {% endfor %}
+    {% include 'navbar.html' %}
+    <div class="cont{% if fixed_height %} height-no-nav{%endif%}">
+        {% if show_alerts %}
+            {% for category, message in get_flashed_messages(with_categories=true) %}
+                <div class="alert alert-dark text-white mt-3">{{ message | safe }}</div>
+            {% endfor %}
+        {% endif %}
         {% block content %} {% endblock %}
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"

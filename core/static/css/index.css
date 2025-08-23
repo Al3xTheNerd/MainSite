@@ -13,3 +13,9 @@ div.card {
     border-color: white;
     border-width: 1px;
 }
+.height-no-nav {
+    height: calc(100vh - 60px) !important;
+}
+div.alert-dark {
+    background-color: #373b3e;
+}
