@@ -1,0 +1,164 @@
+{% set fixed_height = false %}
+{% set show_alerts = true %}
+
+{% extends "core_layout.html" %}
+
+{% block extra_styles %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/mdbassit/Coloris@latest/dist/coloris.min.css" />
+{% endblock %}
+
+
+{% block content %}
+<div class="row gx-3 gy-3 mb-3 mt-0">
+    <div class="col">
+        <div class="card h-100 text-white bg-dark border-white">
+            <h3 class="card-header border-white">Minecraft Gradient Generator</h3>
+            <div class="card-body">
+                <p class="card-text">This tool is used to generate a Minecraft formatted gradient, commonly used in the
+                    Essentials mod with <code>/nickname</code> or in TAB prefixes.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row gx-3 gy-3">
+    <div class="col-12">
+        <div class="card h-100 text-white bg-dark border-white">
+            <h3 class="card-header border-white">Text Preview</h3>
+            <div class="card-body">
+                <p class="card-text" style="font-size: 3rem;">
+                <div class="mc-font" id="previewOutput"></div>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
+        <div class="card h-100 text-white bg-dark border-white">
+            <h3 class="card-header border-white">Color Selection</h3>
+            <div class="card-body" id="colorsContainer">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control left-border-reset color-input" value="#000000" data-coloris>
+                </div>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control left-border-reset color-input" value="#000000" data-coloris>
+                </div>
+            </div>
+            <div class="card-footer border-white">
+                <button id="addColorBtn" class="btn btn-secondary">Add Color</button>
+                <button id="removeColorBtn" class="btn btn-danger">Remove Color</button>
+                
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
+        <div class="card h-100 text-white bg-dark border-white">
+            <h3 class="card-header border-white">Color Selection</h3>
+            <div class="card-body">
+                <div class="input-group mb-3">
+                    <label class="input-group-text" for="textInputGroup">Text Input</label>
+                    <input type="text" class="form-control left-border-reset" value="AlexTheNerd" name='textInput'
+                        id="textInputGroup" oninput="generatePreview()">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
+        <div class="card h-100 text-white bg-dark border-white">
+            <h3 class="card-header border-white">Color Code Output</h3>
+            <div class="card-body">
+                <p class="card-text">
+                <div id="colorOutput"></div>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/gh/mdbassit/Coloris@latest/dist/coloris.min.js"></script>
+<script src="{{url_for('static', filename='scripts/gradient.js')}}"></script>
+<script>
+    Coloris({
+        theme: 'pill',
+        themeMode: 'dark',
+        alpha: false,
+        swatches: [
+            '#2a9d8f',
+            '#e9c46a'
+        ],
+        defaultColor: '#000000',
+        onChange: (color, inputEl) => {
+            generatePreview();
+        }
+    });
+
+    const colorsContainer = document.getElementById("colorsContainer");
+    const textInputEl = document.getElementById("textInputGroup");
+    const previewEl = document.getElementById("previewOutput");
+    const outEl = document.getElementById("colorOutput");
+
+    document.getElementById("addColorBtn").addEventListener("click", () => {
+        const divForInput = document.createElement("div");
+        divForInput.classList.add("input-group", "mb-3");
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = "#00ff00";
+        input.classList.add("color-input", "form-control", "left-border-reset");
+        input.setAttribute("data-coloris", "");
+        divForInput.appendChild(input);
+        const output = Coloris.wrap(divForInput.firstChild);
+        colorsContainer.appendChild(divForInput);
+        generatePreview();
+    });
+    document.getElementById("removeColorBtn").addEventListener("click", () => {
+        colorsContainer.removeChild(colorsContainer.lastElementChild);
+        generatePreview();
+    })
+
+
+    // Build sliders for interior stops (everything except first=0 and last=1).
+
+    function readColors() {
+        return [...document.querySelectorAll(".color-input")].map((el) => el.value);
+    }
+
+    function generatePreview(optionalStops) {
+        const text = textInputEl.value ?? "";
+        const colors = readColors();
+        if (colors.length == 1 && text.length >= 1) {
+            previewEl.innerHTML = `<span style="color:${colors[0]}; font-size:3rem;">${text}</span>`;
+            outEl.textContent = `&${colors[0]}${text}`;
+            return;
+        }
+
+        if (colors.length === 0 || text.length === 0) {
+            previewEl.innerHTML = "";
+            outEl.textContent = "";
+            return;
+        }
+
+
+
+        const grad = new Gradient()
+            .setGradient(colors, 0)
+            .setSize(text.length);
+
+        const colorArray = grad.getColors();
+
+        let html = "";
+        let mc = "";
+        for (let i = 0; i < text.length; i++) {
+            const c = colorArray[i];
+            const ch = text[i];
+            html += `<span style="color:${c}; font-size:3rem;">${ch}</span>`;
+            mc += `&${c}${ch}`; // keep your MC formatting scheme
+        }
+
+        previewEl.innerHTML = html;
+        outEl.textContent = mc;
+    }
+    generatePreview()
+</script>
+{% endblock %}

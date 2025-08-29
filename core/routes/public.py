@@ -8,9 +8,12 @@ from flask_login import login_required
 def index(): 
     return render_template("public/index.html")
 
+@app.route('/minecraft/gradient')
+def mcGradient():
+    return render_template("public/mc_gradient.html")
+
 
 @app.route('/test', methods=('GET', 'POST'))
-@login_required
 @admin_required()
 def test(): 
     return render_template("public/index.html")

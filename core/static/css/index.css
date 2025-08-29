@@ -20,3 +20,17 @@ div.alert-dark {
     border-color: white;
     border-width: 1px;
 }
+.left-border-reset {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+@font-face {
+    font-family: 'Unifont';
+    src: url(../fonts/UnifontExMono.woff) format("woff");
+}
+.mc-font {
+    font-family: 'Unifont';
+}
+.clr-field {
+    width: 100%;
+}
