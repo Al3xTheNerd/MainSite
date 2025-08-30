@@ -59,13 +59,12 @@
             <div class="card-body">
                 <div class="input-group mb-3">
                     <label class="input-group-text" for="textInputGroup">Text Input</label>
-                    <input type="text" class="form-control left-border-reset" value="Gradient"
-                        id="textInputGroup" oninput="generatePreview()">
+                    <input type="text" class="form-control left-border-reset" value="Gradient" id="textInputGroup"
+                        oninput="generatePreview()">
                 </div>
                 <div class="input-group mb-3">
                     <label class="input-group-text" for="charCount">Character Count</label>
-                    <input type="text" class="form-control left-border-reset" value="0"
-                        id="charCount" disabled>
+                    <input type="text" class="form-control left-border-reset" value="0" id="charCount" disabled>
                 </div>
             </div>
         </div>
@@ -110,7 +109,8 @@
         <div class="card h-100 text-white bg-dark border-white">
             <h3 class="card-header border-white">Notes</h3>
             <div class="card-body">
-                <p class="card-text">On MysticMC you may not have Underline or Obfuscated enabled on your prefix. Your prefix also must be between 3-15 characters long, this includes spaces and special characters.</p>
+                <p class="card-text">On MysticMC you may not have Underline or Obfuscated enabled on your prefix. Your
+                    prefix also must be between 3-15 characters long, this includes spaces and special characters.</p>
             </div>
         </div>
     </div>
@@ -165,10 +165,10 @@
     });
     const inputElements = document.querySelectorAll('input[type="checkbox"]');
     inputElements.forEach(input => {
-            input.addEventListener('change', () => {
-                generatePreview();
-            })
-        });
+        input.addEventListener('change', () => {
+            generatePreview();
+        })
+    });
 
 
 
@@ -185,7 +185,7 @@
         strikethroughCheck = document.getElementById("strikethroughCheck").checked;
         underlineCheck = document.getElementById("underlineCheck").checked;
         commandPrefix = document.getElementById("commandPrefix").value;
-        
+
         const text = textInputEl.value.trim() ?? "";
         characterCounter.value = text.length;
         const colors = readColors();
@@ -218,13 +218,13 @@
             html += `<span style="color:${c};font-size:3rem;" class="`;
             if (boldCheck) { html += "mc-bold " }
             if (italicCheck) { html += "mc-italic " }
-            if (strikethroughCheck && underlineCheck) { 
-                html += "mc-strikethrough-underline " 
+            if (strikethroughCheck && underlineCheck) {
+                html += "mc-strikethrough-underline "
             } else {
                 if (strikethroughCheck) { html += "mc-strikethrough " }
                 if (underlineCheck) { html += "mc-underlined " }
             }
-            html +=`">${ch}</span>`;
+            html += `">${ch}</span>`;
 
             // Skip adding color to space (for prettier color code)
             mc += `&${c}`;
