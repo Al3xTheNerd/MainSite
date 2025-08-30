@@ -9,7 +9,7 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto">
-            {% for loc, name in [('index', "Home")] %}
+            {% for loc, name in [('index', "Home"), ('mcGradient', "Gradient Maker")] %}
             {% if request.path == url_for(loc) %}
             <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{ url_for(loc) }}">{{name}}</a>
             </li>

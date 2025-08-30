@@ -1,0 +1,81 @@
+.mc-bold {
+    font-weight: bold;
+}
+
+.mc-italic {
+    font-style: italic;
+}
+.mc-underlined {
+    text-decoration: underline;
+}
+.mc-strikethrough {
+    text-decoration: line-through;
+}
+.mc-strikethrough-underline {
+    text-decoration: line-through underline;
+}
+
+/* &0 */
+.mc-black {
+    color: #000000;
+}
+/* &1 */
+.mc-dark-blue {
+    color: #0000AA;
+}
+/* &2 */
+.mc-dark-green {
+    color: #00AA00;
+}
+/* &3 */
+.mc-dark-aqua {
+    color: #00AAAA;
+}
+/* &4 */
+.mc-dark-red {
+    color: #AA0000 ;
+}
+/* &5 */
+.mc-dark-purple {
+    color: #AA00AA ;
+}
+/* &6 */
+.mc-gold {
+    color: #FFAA00;
+}
+/* &7 */
+.mc-gray {
+    color: #AAAAAA ;
+}
+/* &8 */
+.mc-dark-gray {
+    color: #555555 ;
+}
+/* &9 */
+.mc-blue {
+    color: #5555FF;
+}
+/* &a */
+.mc-green {
+    color: #55FF55 ;
+}
+/* &b */
+.mc-aqua {
+    color: #55FFFF;
+}
+/* &c */
+.mc-red {
+    color: #FF5555;
+}
+/* &d */
+.mc-light-purple {
+    color: #FF55FF;
+}
+/* &e */
+.mc-yellow {
+    color: #FFFF55;
+}
+/* &f */
+.mc-white {
+    color: #FFFFFF;
+}
