@@ -35,14 +35,14 @@
     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
         <div class="card h-100 text-white bg-dark border-white">
             <h3 class="card-header border-white">Color Selection</h3>
-            <div class="card-body" id="colorsContainer">
-                <div class="input-group mb-3">
+            <div class="card-body weird-margins" id="colorsContainer">
+                <div class="input-group">
                     <input type="text" class="form-control color-input" value="#2a9d8f" data-coloris>
                 </div>
-                <div class="input-group mb-3">
+                <div class="input-group">
                     <input type="text" class="form-control color-input" value="#e9c46a" data-coloris>
                 </div>
-                <div class="input-group mb-3">
+                <div class="input-group">
                     <input type="text" class="form-control color-input" value="#2a9d8f" data-coloris>
                 </div>
             </div>
@@ -145,7 +145,7 @@
 
     document.getElementById("addColorBtn").addEventListener("click", () => {
         const divForInput = document.createElement("div");
-        divForInput.classList.add("input-group", "mb-3");
+        divForInput.classList.add("input-group");
         const input = document.createElement("input");
         input.type = "text";
         input.value = "#00ff00";
