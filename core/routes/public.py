@@ -1,6 +1,6 @@
 from flask import render_template, request
 from core import app
-from core.decorators.auth import admin_required
+from core.decorators.auth import permission_level_required
 from flask_login import login_required
 import git
 
@@ -10,6 +10,7 @@ def index():
     return render_template("public/index.html")
 
 @app.route('/minecraft/gradient')
+@permission_level_required(100)
 def mcGradient():
     return render_template("public/mc_gradient.html")
 
