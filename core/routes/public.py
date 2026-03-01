@@ -10,7 +10,6 @@ def index():
     return render_template("public/index.html")
 
 @app.route('/minecraft/gradient')
-@permission_level_required(100)
 def mcGradient():
     return render_template("public/mc_gradient.html")
 
