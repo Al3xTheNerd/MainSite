@@ -11,6 +11,7 @@ from core.models.shopLogs import ShopLogs
 import time
 def sortDict(data: Dict[Any, int | float], reverse: bool = False) -> Dict[Any, int | float]:
     sorted_dict = dict(sorted(data.items(), key=lambda item: item[1], reverse = reverse))
+    print(sorted_dict)
     return sorted_dict
 
 @permission_level_required(10)
