@@ -130,7 +130,7 @@ def ShopManageItem_POST(itemID):
 
 def getOrCreateListing(ItemName: str, Action: str, Amount: int, PricePerItem: float | None = None, username = None) -> Items:
     if PricePerItem:
-        UntaxedPrice = PricePerItem / 0.99
+        UntaxedPrice = round(PricePerItem / 0.99, 2)
     item: Items | None = Items.query.filter_by(Name = ItemName, ShopOwner = username).one_or_none()
     if not item:
         item = Items()
