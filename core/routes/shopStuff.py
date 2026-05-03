@@ -11,7 +11,6 @@ from core.models.shopLogs import ShopLogs
 import time
 def sortDict(data: Dict[Any, int | float], reverse: bool = False) -> Dict[Any, int | float]:
     sorted_dict = dict(sorted(data.items(), key=lambda item: item[1], reverse = reverse))
-    print(sorted_dict)
     return sorted_dict
 
 @permission_level_required(10)
@@ -27,6 +26,7 @@ def ShopTime(days):
     
     PeopleWhoSoldTheMost = {}
     PeopleWhoBoughtTheMost = {}
+    PeopleWhoBoughtTheMostValue = {}
     
     MostPurchasedItems = {}
     MostSoldItems = {}
@@ -37,15 +37,17 @@ def ShopTime(days):
     
     CashEarnedFromSelling = 0.0
     for log in transactionLogs:
-        if log.Money:
-            if log.Type == "to":
+        if log.Type == "to":
+            if log.Money:
                 CashSpentOnBuying += log.Money
-                PeopleWhoSoldTheMost[log.Interactor] = PeopleWhoSoldTheMost.get(log.Interactor, 0) + log.Quantity
-                MostPurchasedItems[log.Item] = MostPurchasedItems.get(log.Item, 0) + log.Quantity
-            else:
+            PeopleWhoSoldTheMost[log.Interactor] = PeopleWhoSoldTheMost.get(log.Interactor, 0) + log.Quantity
+            MostPurchasedItems[log.Item] = MostPurchasedItems.get(log.Item, 0) + log.Quantity
+        else:
+            if log.Money:
                 CashEarnedFromSelling += log.Money
-                PeopleWhoBoughtTheMost[log.Interactor] = PeopleWhoBoughtTheMost.get(log.Interactor, 0) + log.Quantity
-                MostSoldItems[log.Item] = MostSoldItems.get(log.Item, 0) + log.Quantity
+                PeopleWhoBoughtTheMostValue[log.Interactor] = PeopleWhoBoughtTheMostValue.get(log.Interactor, 0) + log.Money
+            PeopleWhoBoughtTheMost[log.Interactor] = PeopleWhoBoughtTheMost.get(log.Interactor, 0) + log.Quantity
+            MostSoldItems[log.Item] = MostSoldItems.get(log.Item, 0) + log.Quantity
     NetAmount = CashEarnedFromSelling - CashSpentOnBuying
     stats = {
         "bought" : CashSpentOnBuying,
@@ -54,6 +56,8 @@ def ShopTime(days):
         "days" : days,
         "PeopleWhoSoldTheMost" : sortDict(PeopleWhoSoldTheMost, True),
         "PeopleWhoBoughtTheMost" : sortDict(PeopleWhoBoughtTheMost, True),
+        "PeopleWhoBoughtTheMostValue" : sortDict(PeopleWhoBoughtTheMostValue, True),
+        
         "MostPurchasedItems" : sortDict(MostPurchasedItems, True),
         "MostSoldItems" : sortDict(MostSoldItems, True),
         "defaults" : defaultTimes
