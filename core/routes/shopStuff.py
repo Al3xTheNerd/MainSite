@@ -39,15 +39,13 @@ def ShopTime(days):
         if log.Money:
             if log.Type == "to":
                 CashSpentOnBuying += log.Money
-                PeopleWhoSoldTheMost[log.Interactor] = PeopleWhoSoldTheMost.get(log.Interactor, 0) + log.Money
+                PeopleWhoSoldTheMost[log.Interactor] = PeopleWhoSoldTheMost.get(log.Interactor, 0) + log.Quantity
                 MostPurchasedItems[log.Item] = MostPurchasedItems.get(log.Item, 0) + log.Quantity
             else:
                 CashEarnedFromSelling += log.Money
-                PeopleWhoBoughtTheMost[log.Interactor] = PeopleWhoBoughtTheMost.get(log.Interactor, 0) + log.Money
+                PeopleWhoBoughtTheMost[log.Interactor] = PeopleWhoBoughtTheMost.get(log.Interactor, 0) + log.Quantity
                 MostSoldItems[log.Item] = MostSoldItems.get(log.Item, 0) + log.Quantity
     NetAmount = CashEarnedFromSelling - CashSpentOnBuying
-    print(CashEarnedFromSelling)
-    print(CashSpentOnBuying)
     stats = {
         "bought" : CashSpentOnBuying,
         "sold" : CashEarnedFromSelling,
@@ -70,7 +68,6 @@ def ShopTransactions():
     newItemList = {}
     for item in itemList:
         newItemList[item.id] = item
-    print(newItemList)
     for log in transactionLogs:
         match log.Type:
             case "to":
