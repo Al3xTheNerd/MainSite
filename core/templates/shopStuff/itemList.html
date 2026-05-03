@@ -1,0 +1,64 @@
+{% set fixed_height = false %}
+{% set show_alerts = true %}
+{% extends "core_layout.html" %}
+{% block extra_styles %}
+<link href="https://cdn.datatables.net/v/bs5/dt-2.3.8/datatables.min.css" rel="stylesheet" integrity="sha384-UclYA0TM50oo4lzbw9CylacalWmOxu+RipNT22BDrqDD9v2F0M+262NAs03TOfhw" crossorigin="anonymous">
+{% endblock %}
+{% block content %}
+
+<div class="row gx-3 gy-3 mb-3 mt-0">
+    <div class="col">
+        <div class="card h-100 text-white bg-dark border-white">
+            <h3 class="card-header border-white">Item List</h3>
+            <div class="card-body">
+                <p class="card-text">A list of all items you are shown as selling/buying.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row gx-3 gy-3">
+    <div class="col">
+        <div class="card h-100 text-white bg-dark border-white">
+            <h3 class="card-header border-white">Item List</h3>
+            <div class="card-body">
+                <table class="table text-white" id="items">
+                    <thead>
+                        <tr>
+                            <th scope="col">Item ID</th>
+                            <th scope="col">Item Name</th>
+                            <th scope="col">Sell Price</th>
+                            <th scope="col">Buy Price</th>
+                            <th scope="col">Estimated Stock</th>
+                            <th scope="col">Edit Item</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in ItemList %}
+                        <tr>
+                            <th scope="col">{{item.id}}</th>
+                            <td scope="col"><code>{{item.Name}}</code></td>
+                            <td scope="col">{{item.SellPrice}}</td>
+                            <td scope="col">{{item.BuyPrice}}</td>
+                            <td scope="col">{{item.StockLevel}}</td>
+                            <td scope="col"><a href="{{url_for('ShopManageItem', itemID = item.id)}}">Edit Item</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                
+                
+                
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.3.8/datatables.min.js" integrity="sha384-pszF7QvU8ChuuhQBJGIvzVEcojfpYqQOVG2PaXES4M4Mcn+1CqfQ4r1b/mpdtn/6" crossorigin="anonymous"></script>
+<script>
+new DataTable('#items')
+
+</script>
+
+{% endblock %}
+

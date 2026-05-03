@@ -8,7 +8,7 @@ def permission_level_required(level: int):
         @login_required
         def decorated_function(*args, **kwargs):
             print(level)
-            if current_user.adminPermissions <= level:
+            if current_user.adminPermissions < level:
                 flash(f"You need <code>Level: {level}</code> permission to view that page. Current: <code>Level: {current_user.adminPermissions}</code>.")
                 return redirect(url_for('index'))
             return f(*args, **kwargs)

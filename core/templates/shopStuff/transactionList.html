@@ -1,0 +1,70 @@
+{% set fixed_height = false %}
+{% set show_alerts = true %}
+{% extends "core_layout.html" %}
+{% block extra_styles %}
+<link href="https://cdn.datatables.net/v/bs5/dt-2.3.8/datatables.min.css" rel="stylesheet" integrity="sha384-UclYA0TM50oo4lzbw9CylacalWmOxu+RipNT22BDrqDD9v2F0M+262NAs03TOfhw" crossorigin="anonymous">
+{% endblock %}
+{% block content %}
+
+<div class="row gx-3 gy-3 mb-3 mt-0">
+    <div class="col">
+        <div class="card h-100 text-white bg-dark border-white">
+            <h3 class="card-header border-white">Main Dashboard</h3>
+            <div class="card-body">
+                <p class="card-text">Contains general statistics on your chestshops, as well as some other details.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row gx-3 gy-3">
+    <div class="col">
+        <div class="card h-100 text-white bg-dark border-white">
+            <h3 class="card-header border-white">Recent Transactions</h3>
+            <div class="card-body">
+                <p class="card-text">Timestamps are in UTC timezone.</p>
+            </div>
+            <div class="card-body">
+                <table class="table text-white" id="transactions">
+                    <thead>
+                        <tr>
+                            <th scope="col">Transaction ID</th>
+                            <th scope="col">User</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">Item</th>
+                            <th scope="col">$</th>
+                            <th scope="col">Timestamp</th>
+                            <th scope="col">Action</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in TransactionLogs %}
+                        <tr>
+                            <th scope="col">{{log.id}}</th>
+                            <td scope="col">{{log.Interactor}}</td>
+                            <td scope="col">{{log.Quantity}}</td>
+                            <td scope="col">{{ItemList[log.Item].Name}}</td>
+                            <td scope="col">{{log.Money}}</td>
+                            <td scope="col">{{log.TimeStamp | datetime}}</td>
+                            <td scope="col">{{log.Type}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                
+                
+                
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.3.8/datatables.min.js" integrity="sha384-pszF7QvU8ChuuhQBJGIvzVEcojfpYqQOVG2PaXES4M4Mcn+1CqfQ4r1b/mpdtn/6" crossorigin="anonymous"></script>
+<script>
+new DataTable('#transactions')
+
+</script>
+
+{% endblock %}
+

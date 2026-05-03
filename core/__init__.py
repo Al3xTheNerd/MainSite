@@ -26,4 +26,13 @@ login_manager.login_view = '/login' # type: ignore
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+from datetime import datetime, timezone
+def format_datetime(value, format="%H:%M %m-%d-%Y"):
+    value /=1000
+    return datetime.fromtimestamp(value, tz=timezone.utc).strftime(format)
+
+app.jinja_env.filters['datetime'] = format_datetime
+
+
+
 from core.routes import *

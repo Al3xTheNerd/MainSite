@@ -25,21 +25,25 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-dark">
                     {% if current_user.is_authenticated %}
-                    {% set l = [('logout', "Logout")] | list%}
+                        {% if current_user.adminPermissions >= 10 %}
+                            <li><a class="dropdown-item{%if request.path.startswith('/shop/time')%} active{%endif%}"
+                                href="{{ url_for('ShopTime', days = 3)}}">General Statistics</a></li>
+                            <li><a class="dropdown-item{%if request.path == url_for('ShopTransactions')%} active{%endif%}"
+                                href="{{ url_for('ShopTransactions')}}">Past Transactions</a></li>
+                            <li><a class="dropdown-item{%if request.path == url_for('ShopItems')%} active{%endif%}"
+                                href="{{ url_for('ShopItems')}}">Item List</a></li>
+                            <div class="dropdown-divider"></div>
+                        {% endif %}
+                        {% if current_user.adminPermissions >= 100 %}
+                        <li><a class="dropdown-item{%if request.path == url_for('manageUsers')%} active{%endif%}" href="{{ url_for('manageUsers')}}">Manage Users</a></li>
+                        <div class="dropdown-divider"></div>
+                        {% endif %}
+                        <li><a class="dropdown-item{%if request.path == url_for('resetPass')%} active{%endif%}" href="{{ url_for('resetPass')}}">Reset Password</a></li>
+                        <li><a class="dropdown-item{%if request.path == url_for('logout')%} active{%endif%}" href="{{ url_for('logout')}}">Logout</a></li>
                     {% else %}
-                    {% set l = [('login', "Login")] %}
-                    {%endif%}
-                    {% for loc, name in l %}
-                    {% if loc is false %}
-                    <div class="dropdown-divider"></div>
-                    {% else %}
-                    {% if request.path == url_for(loc) %}
-                    <li><a class="dropdown-item active" href="{{ url_for(loc) }}">{{name}}</a></li>
-                    {% else %}
-                    <li><a class="dropdown-item" href="{{ url_for(loc) }}">{{name}}</a></li>
+                        <li><a class="dropdown-item{%if request.path == url_for('signup')%} active{%endif%}" href="{{ url_for('signup')}}">Sign up</a></li>
+                        <li><a class="dropdown-item{%if request.path == url_for('login')%} active{%endif%}" href="{{ url_for('login')}}">Sign in</a></li>
                     {% endif %}
-                    {% endif %}
-                    {% endfor %}
                 </ul>
             </li>
         </ul>
