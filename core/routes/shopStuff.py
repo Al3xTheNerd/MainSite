@@ -48,7 +48,7 @@ def ShopTime(days):
                 PeopleWhoBoughtTheMostValue[log.Interactor] = PeopleWhoBoughtTheMostValue.get(log.Interactor, 0) + log.Money
             PeopleWhoBoughtTheMost[log.Interactor] = PeopleWhoBoughtTheMost.get(log.Interactor, 0) + log.Quantity
             MostSoldItems[log.Item] = MostSoldItems.get(log.Item, 0) + log.Quantity
-    NetAmount = CashEarnedFromSelling - CashSpentOnBuying
+    NetAmount = round(CashEarnedFromSelling - CashSpentOnBuying, 2)
     stats = {
         "bought" : CashSpentOnBuying,
         "sold" : CashEarnedFromSelling,
