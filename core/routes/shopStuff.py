@@ -191,12 +191,15 @@ def hook():
                     dollars = float(match.group(4))
                     item = getOrCreateListing(match.group(3), "subtract", quantity, dollars/quantity, username=message["username"])
                     db.session.add(ShopLogs(Type = "from", Interactor = name, Quantity = quantity, Item = item.id, Money = dollars, TimeStamp = message["time"], ShopOwner=message["username"])) # type: ignore
-            case "out":
-                pattern = r"run out of\s+(.+?)(?:!|$)"
-                match = re.search(pattern, message["message"])
-                if match:
-                    item = match.group(1)
-                    item = getOrCreateListing(match.group(1), "set", 0, username=message["username"])
+            
+            #case "out":
+            #    pattern = r"run out of\s+(.+?)(?:!|$)"
+            #    match = re.search(pattern, message["message"])
+            #    if match:
+            #        item = match.group(1)
+            #        item = getOrCreateListing(match.group(1), "set", 0, username=message["username"])
+            case _:
+                pass
         db.session.commit()
             
     return '', 200
