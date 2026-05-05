@@ -50,8 +50,8 @@ def ShopTime(days):
             MostSoldItems[log.Item] = MostSoldItems.get(log.Item, 0) + log.Quantity
     NetAmount = round(CashEarnedFromSelling - CashSpentOnBuying, 2)
     stats = {
-        "bought" : CashSpentOnBuying,
-        "sold" : CashEarnedFromSelling,
+        "bought" : round(CashSpentOnBuying, 2),
+        "sold" : round(CashEarnedFromSelling, 2),
         "total" : NetAmount,
         "days" : days,
         "PeopleWhoSoldTheMost" : sortDict(PeopleWhoSoldTheMost, True),
