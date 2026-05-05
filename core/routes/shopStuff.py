@@ -1,4 +1,4 @@
-from flask import render_template, request, flash, redirect, url_for
+from flask import render_template, request, flash, redirect, url_for, jsonify
 from core import app, db
 from core.decorators.auth import permission_level_required
 from flask_login import current_user
@@ -159,7 +159,9 @@ def getOrCreateListing(ItemName: str, Action: str, Amount: int, PricePerItem: fl
     return item
 
 
-
+@app.route('/shopconfig')
+def ShopConfig():
+    return jsonify(batch_seconds=15)
 
 @app.route('/hook', methods=['POST'])
 def hook():
