@@ -83,6 +83,27 @@ def ShopTransactions():
     return render_template("shopStuff/transactionList.html", TransactionLogs=transactionLogs, ItemList = newItemList)
 
 
+
+@permission_level_required(100)
+@app.route('/shop/fixOldLogs')
+def ShopFixOld():
+    transactionLogs: List[ShopLogs] = ShopLogs.query.filter_by(ShopOwner=current_user.username, Type="to", Money=0.0).all()
+    itemList: List[Items] = Items.query.filter_by(ShopOwner=current_user.username).all()
+    
+    buyPrices: Dict[int, float] = {item.id: item.BuyPrice for item in itemList}
+    totalChanged = 0.0
+    transactionsChanged = 0
+    for log in transactionLogs:
+        old = log.Money
+        log.Money = round(buyPrices[log.Item] * log.Quantity, 2)
+        if old != log.Money:
+            totalChanged += (log.Money - old)
+            transactionsChanged += 1
+    flash(f"{transactionsChanged} total transactions updated. -${round(totalChanged, 2)} accounted for.")
+    db.session.commit()
+    return redirect(url_for('ShopTime', days=3))
+
+
 @permission_level_required(10)
 @app.route('/shop/items')
 def ShopItems(): 
