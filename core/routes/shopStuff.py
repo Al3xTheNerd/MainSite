@@ -79,7 +79,8 @@ def ShopTransactions():
                 log.Type = "Buy"
             case "from":
                 log.Type = "Sell"
-    return render_template("shopStuff/transactionList.html", TransactionLogs=transactionLogs.reverse(), ItemList = newItemList)
+    transactionLogs.reverse()
+    return render_template("shopStuff/transactionList.html", TransactionLogs=transactionLogs, ItemList = newItemList)
 
 
 @permission_level_required(10)
