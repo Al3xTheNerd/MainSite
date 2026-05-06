@@ -56,7 +56,9 @@
 {% block extra_scripts %}
 <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.3.8/datatables.min.js" integrity="sha384-pszF7QvU8ChuuhQBJGIvzVEcojfpYqQOVG2PaXES4M4Mcn+1CqfQ4r1b/mpdtn/6" crossorigin="anonymous"></script>
 <script>
-new DataTable('#items')
+new DataTable('#items', {
+    order: [4, 'desc']
+})
 
 </script>
 
