@@ -27,9 +27,9 @@
                     {% if current_user.is_authenticated %}
                         {% if current_user.adminPermissions >= 10 %}
                             <li><a class="dropdown-item{%if request.path.startswith('/shop/time')%} active{%endif%}"
-                                href="{{ url_for('ShopTime', days = 3)}}">General Statistics</a></li>
-                            <li><a class="dropdown-item{%if request.path == url_for('ShopTransactions')%} active{%endif%}"
-                                href="{{ url_for('ShopTransactions')}}">Past Transactions</a></li>
+                                href="{{ url_for('ShopTimeSelf', days = 3)}}">General Statistics</a></li>
+                            <li><a class="dropdown-item{%if request.path == url_for('ShopTransactionsSelf')%} active{%endif%}"
+                                href="{{ url_for('ShopTransactionsSelf')}}">Past Transactions</a></li>
                             <li><a class="dropdown-item{%if request.path == url_for('ShopItems')%} active{%endif%}"
                                 href="{{ url_for('ShopItems')}}">Item List</a></li>
                             <div class="dropdown-divider"></div>

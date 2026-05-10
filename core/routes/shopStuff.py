@@ -188,7 +188,7 @@ def ShopSetStaff_POST():
     db.session.commit()
     flash(f"Staff set to <code>{current_user.staffMembers}.</code>")
 
-    return redirect(url_for("ShopTimeStaff"))
+    return redirect(url_for("ShopTimeSelf", days=3))
 
 
 @permission_level_required(0)
@@ -253,7 +253,7 @@ def ShopFixOld():
             transactionsChanged += 1
     flash(f"{transactionsChanged} total transactions updated. -${round(totalChanged, 2)} accounted for.")
     db.session.commit()
-    return redirect(url_for('ShopTime', days=3))
+    return redirect(url_for('ShopTimeSelf', days=3))
 
 
 @app.route('/hook', methods=['POST'])
