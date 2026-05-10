@@ -1,0 +1,31 @@
+{% set fixed_height = true %}
+{% set show_alerts = false %}
+{% extends "core_layout.html" %}
+{% block content %}
+<div class="row gx-3 gy-3 mt-0 h-100">
+    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3 mx-auto my-auto">
+        <div class="card h-100 text-white bg-dark border-white">
+            <h3 class="card-header">Set shop staff.</h3>
+            <div class="card-body">
+                <form method="POST" class="text-black">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" name='staffMembers' id="staffGroup"
+                            placeholder="Staff Members", value="{{current_user.staffMembers}}">
+                        <label for="staffGroup">Staff Members (seperate names with a comma)</label>
+                    </div>
+                    <button class="btn btn-primary mb-1" type="submit">Update Staff</button>
+                </form>
+            </div>
+            {%with messages = get_flashed_messages()%}
+            {%if messages %}
+            <ul class="list-group list-group-flush">
+                {% for message in messages %}
+                <li class="list-group-item bg-dark text-white border-white">{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {%endif%}
+            {%endwith%}
+        </div>
+    </div>
+</div>
+{% endblock %}

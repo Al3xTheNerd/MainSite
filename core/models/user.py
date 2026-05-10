@@ -6,3 +6,4 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(100))
     username = db.Column(db.String(1000))
     adminPermissions = db.Column(db.Integer)
+    staffMembers = db.Column(db.String(1000))
