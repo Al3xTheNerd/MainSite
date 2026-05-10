@@ -25,6 +25,9 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-dark">
                     {% if current_user.is_authenticated %}
+                        <li><a class="dropdown-item{%if request.path == url_for('ShopOtherShops')%} active{%endif%}"
+                            href="{{ url_for('ShopOtherShops')}}">Item List</a></li>
+                        <div class="dropdown-divider"></div>
                         {% if current_user.adminPermissions >= 10 %}
                             <li><a class="dropdown-item{%if request.path.startswith('/shop/time')%} active{%endif%}"
                                 href="{{ url_for('ShopTimeSelf', days = 3)}}">General Statistics</a></li>
