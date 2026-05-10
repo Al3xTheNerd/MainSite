@@ -26,7 +26,7 @@
                 <ul class="dropdown-menu dropdown-menu-dark">
                     {% if current_user.is_authenticated %}
                         <li><a class="dropdown-item{%if request.path == url_for('ShopViewShops')%} active{%endif%}"
-                            href="{{ url_for('ShopViewShops')}}">Item List</a></li>
+                            href="{{ url_for('ShopViewShops')}}">Other Shops</a></li>
                         <div class="dropdown-divider"></div>
                         {% if current_user.adminPermissions >= 10 %}
                             <li><a class="dropdown-item{%if request.path.startswith('/shop/time')%} active{%endif%}"
@@ -35,6 +35,8 @@
                                 href="{{ url_for('ShopTransactionsSelf')}}">Past Transactions</a></li>
                             <li><a class="dropdown-item{%if request.path == url_for('ShopItems')%} active{%endif%}"
                                 href="{{ url_for('ShopItems')}}">Item List</a></li>
+                            <li><a class="dropdown-item{%if request.path == url_for('ShopSetStaff')%} active{%endif%}"
+                                href="{{ url_for('ShopSetStaff')}}">Set Staff</a></li>
                             <div class="dropdown-divider"></div>
                         {% endif %}
                         {% if current_user.adminPermissions >= 100 %}

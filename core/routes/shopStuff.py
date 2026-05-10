@@ -16,14 +16,16 @@ def sortDict(data: Dict[Any, int | float], reverse: bool = False) -> Dict[Any, i
 def hasAccessToShop(shopOwner) -> bool:
     shopInfo: User | None = User.query.filter(User.username==shopOwner).one_or_none()
     if isinstance(shopInfo, User):
-        allowedUsers = shopInfo.staffMembers.split(",")
         if current_user.adminPermissions == 100:
             return True
-        if "public" in allowedUsers:
-            return True
-        for user in allowedUsers:
-            if current_user.username.lower() == user:
+        if shopInfo.staffMembers:
+            allowedUsers = shopInfo.staffMembers.split(",")
+            print(allowedUsers)
+            if "public" in allowedUsers:
                 return True
+            for user in allowedUsers:
+                if current_user.username.lower() == user.lower():
+                    return True
     return False
 
 def ShopTime(days, username):
@@ -84,7 +86,7 @@ def ShopTimeSelf(days):
 def ShopTimeOthers(days, username):
     if hasAccessToShop(username):
         stats, newItemList = ShopTime(days, username)
-        return render_template("shopStuff/index_others.html", stats = stats, ItemList = newItemList)
+        return render_template("shopStuff/index_others.html", stats = stats, ItemList = newItemList, shopOwner = username)
     flash("You do not have access to this shop. Try again if you feel this is an error.")
     return redirect(url_for("index"))
 
