@@ -279,13 +279,13 @@ def hook():
                         money = 0.0
                     db.session.add(ShopLogs(Type = "to", Interactor = name, Quantity = quantity, Item = item.id, TimeStamp = message["time"], ShopOwner=message["username"], Money = money)) # type: ignore
             case "from":
-                pattern = r"(\w+)\s+purchased\s+(\d+)\s+(.+?)\s+from your shop, and you earned\s+\$(\d+(?:\.\d+)?)"
+                pattern = r"(\w+)\s+purchased\s+(\d+)\s+(.+?)\s+from your shop, and you earned\s+\$([\d,]+(?:\.\d+)?)"
                 match = re.search(pattern, message["message"])
                 if match:
                     name = match.group(1)
                     quantity = int(match.group(2))
                     item = match.group(3)
-                    dollars = float(match.group(4))
+                    dollars = float(match.group(4).replace(',', ''))
                     item = getOrCreateListing(match.group(3), "subtract", quantity, dollars/quantity, username=message["username"])
                     db.session.add(ShopLogs(Type = "from", Interactor = name, Quantity = quantity, Item = item.id, Money = dollars, TimeStamp = message["time"], ShopOwner=message["username"])) # type: ignore
             
