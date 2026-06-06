@@ -9,9 +9,9 @@
 <div class="row gx-3 gy-3 mb-3 mt-0">
     <div class="col">
         <div class="card h-100 text-white bg-dark border-white">
-            <h3 class="card-header border-white">Item List</h3>
+            <h3 class="card-header border-white">Excluded Item List</h3>
             <div class="card-body">
-                <p class="card-text">A list of all items you are shown as selling/buying.</p>
+                <p class="card-text">A list of all items you are shown as selling/buying, but don't want included in statistics or to strangers looking at your data.</p>
             </div>
         </div>
     </div>
@@ -29,7 +29,7 @@
                             <th scope="col">Sell Price</th>
                             <th scope="col">Buy Price</th>
                             <th scope="col">Estimated Stock</th>
-                            <th scope="col">Exclude Item</th>
+                            <th scope="col">Include Item</th>
                             <th scope="col">Edit Item</th>
                         </tr>
                     </thead>
@@ -41,7 +41,7 @@
                             <td scope="col">{{item.SellPrice}}</td>
                             <td scope="col">{{item.BuyPrice}}</td>
                             <td scope="col">{{item.StockLevel}}</td>
-                            <td scope="col"><a href="{{url_for('ShopExcludeItem', itemID = item.id)}}">Exclude Item</a></td>
+                            <td scope="col"><a href="{{url_for('ShopIncludeItem', itemID = item.id)}}">Include Item</a></td>
                             <td scope="col"><a href="{{url_for('ShopManageItem', itemID = item.id)}}">Edit Item</a></td>
                         </tr>
                         {% endfor %}

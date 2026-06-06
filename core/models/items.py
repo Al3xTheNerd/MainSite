@@ -7,3 +7,4 @@ class Items(db.Model):
     BuyPrice = db.Column(db.Float()) # to
     StockLevel = db.Column(db.Integer())
     ShopOwner = db.Column(db.String(20)) 
+    Excluded = db.Column(db.Integer())

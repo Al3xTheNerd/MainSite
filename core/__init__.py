@@ -19,6 +19,10 @@ from core.models import *
 with app.app_context():
     db.create_all()
 
+    for item in Items.query.all():
+        if item.Excluded == None:
+            item.Excluded = 0
+    db.session.commit()
 login_manager = LoginManager(app=app)
 login_manager.login_view = '/login' # type: ignore
 

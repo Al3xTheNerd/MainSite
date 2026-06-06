@@ -29,7 +29,7 @@ def hasAccessToShop(shopOwner) -> bool:
     return False
 
 def ShopTime(days, username):
-    itemList: List[Items] = Items.query.filter_by(ShopOwner=username).all()
+    itemList: List[Items] = Items.query.filter_by(ShopOwner=username, Excluded=0).all()
     newItemList = {}
     for item in itemList:
         newItemList[item.id] = item
@@ -49,6 +49,8 @@ def ShopTime(days, username):
     
     CashEarnedFromSelling = 0.0
     for log in transactionLogs:
+        if log.Item not in newItemList.keys():
+            continue
         if log.Type == "to":
             if log.Money:
                 CashSpentOnBuying += log.Money
@@ -124,9 +126,16 @@ def ShopTransactionsOthers(username):
 @permission_level_required(10)
 @app.route('/shop/items')
 def ShopItems(): 
-    itemList: List[Items] = Items.query.filter_by(ShopOwner=current_user.username).all()
+    itemList: List[Items] = Items.query.filter(Items.ShopOwner==current_user.username, Items.Excluded != 1 ).all()
 
     return render_template("shopStuff/itemList.html", ItemList = itemList)
+
+@permission_level_required(10)
+@app.route('/shop/excludedItems')
+def ShopExcludedItems(): 
+    itemList: List[Items] = Items.query.filter(Items.ShopOwner==current_user.username, Items.Excluded != 0 ).all()
+
+    return render_template("shopStuff/excludedItemList.html", ItemList = itemList)
 
 @permission_level_required(0)
 @app.route('/shop/items/<username>')
@@ -151,6 +160,40 @@ def ShopManageItem(itemID):
         flash("This item does not exist. Please try again.")
         return redirect(url_for("ShopItems"))
     
+
+@permission_level_required(10)
+@app.route('/shop/excludeItem/<itemID>', methods=['GET'])
+def ShopExcludeItem(itemID): 
+    item: Items | None= Items.query.filter(Items.id == itemID).one_or_none()
+    if isinstance(item, Items):
+        if item.ShopOwner == current_user.username:
+            item.Excluded = 1;
+            db.session.commit()
+            flash(f"Excluded <code>{item.Name}</code> from the item list and general statistics.")
+            return redirect(url_for("ShopItems"))
+        else:
+            flash("This item does not belong to your shops. Please try again.")
+            return redirect(url_for("ShopItems"))
+    else:
+        flash("This item does not exist. Please try again.")
+        return redirect(url_for("ShopItems"))
+
+@permission_level_required(10)
+@app.route('/shop/includeItem/<itemID>', methods=['GET'])
+def ShopIncludeItem(itemID): 
+    item: Items | None= Items.query.filter(Items.id == itemID).one_or_none()
+    if isinstance(item, Items):
+        if item.ShopOwner == current_user.username:
+            item.Excluded = 0;
+            db.session.commit()
+            flash(f"Re-included <code>{item.Name}</code> into the item list and general statistics.")
+            return redirect(url_for("ShopExcludedItems"))
+        else:
+            flash("This item does not belong to your shops. Please try again.")
+            return redirect(url_for("ShopExcludedItems"))
+    else:
+        flash("This item does not exist. Please try again.")
+        return redirect(url_for("ShopExcludedItems"))
 
 @permission_level_required(10)
 @app.route('/shop/manageItem/<itemID>', methods= ["POST"])
@@ -214,6 +257,7 @@ def getOrCreateListing(ItemName: str, Action: str, Amount: int, PricePerItem: fl
         currentStockLevel = 0
         item.BuyPrice = 0.00
         item.ShopOwner = username
+        item.Excluded = 0
         if PricePerItem:
             item.SellPrice = UntaxedPrice # type: ignore
         db.session.add(item)
