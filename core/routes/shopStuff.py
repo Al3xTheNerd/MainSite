@@ -45,21 +45,25 @@ def ShopTime(days, username):
     MostSoldItems = {}
     
     transactionLogs: List[ShopLogs] = ShopLogs.query.filter(ShopLogs.ShopOwner == username, ShopLogs.TimeStamp >= EpochTimeFrame).all()
-    CashSpentOnBuying = 0.0
+    CashSpentOnBuying = 0.0 
     
-    CashEarnedFromSelling = 0.0
+    CashEarnedFromSelling = 0.0 
+    ItemsBought = 0 
+    ItemsSold = 0 
     for log in transactionLogs:
         if log.Item not in newItemList.keys():
             continue
         if log.Type == "to":
             if log.Money:
                 CashSpentOnBuying += log.Money
+            ItemsBought += log.Quantity
             PeopleWhoSoldTheMost[log.Interactor] = PeopleWhoSoldTheMost.get(log.Interactor, 0) + log.Quantity
             MostPurchasedItems[log.Item] = MostPurchasedItems.get(log.Item, 0) + log.Quantity
         else:
             if log.Money:
                 CashEarnedFromSelling += log.Money
                 PeopleWhoBoughtTheMostValue[log.Interactor] = PeopleWhoBoughtTheMostValue.get(log.Interactor, 0) + log.Money
+            ItemsSold += log.Quantity
             PeopleWhoBoughtTheMost[log.Interactor] = PeopleWhoBoughtTheMost.get(log.Interactor, 0) + log.Quantity
             MostSoldItems[log.Item] = MostSoldItems.get(log.Item, 0) + log.Quantity
     NetAmount = round(CashEarnedFromSelling - CashSpentOnBuying, 2)
@@ -73,7 +77,9 @@ def ShopTime(days, username):
         "PeopleWhoBoughtTheMostValue" : sortDict(PeopleWhoBoughtTheMostValue, True),
         "MostPurchasedItems" : sortDict(MostPurchasedItems, True),
         "MostSoldItems" : sortDict(MostSoldItems, True),
-        "defaults" : defaultTimes
+        "defaults" : defaultTimes,
+        "SoldQuantity" : ItemsSold,
+        "BoughtQuantity" : ItemsBought
     }
     return stats, newItemList
 
