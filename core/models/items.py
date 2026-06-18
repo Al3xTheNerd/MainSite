@@ -8,3 +8,4 @@ class Items(db.Model):
     StockLevel = db.Column(db.Integer())
     ShopOwner = db.Column(db.String(20)) 
     Excluded = db.Column(db.Integer())
+    Shop = db.Column(db.Integer())

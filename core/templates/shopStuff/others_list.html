@@ -9,9 +9,9 @@
 <div class="row gx-3 gy-3 mb-3 mt-0">
     <div class="col">
         <div class="card h-100 text-white bg-dark border-white">
-            <h3 class="card-header border-white">Item List</h3>
+            <h3 class="card-header border-white">Shop List</h3>
             <div class="card-body">
-                <p class="card-text">A list of all items you are shown as selling/buying.</p>
+                <p class="card-text">A list of all the shops you have access to view.</p>
             </div>
         </div>
     </div>
@@ -25,18 +25,30 @@
                     <thead>
                         <tr>
                             <th scope="col">Shop Owner</th>
+                            <th scope="col">Shop Name</th>
+                            
                             <th scope="col">General Statistics</th>
                             <th scope="col">Past Transactions</th>
                             <th scope="col">Item List</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for shop in ShopList %}
+                        {% for shop, isShopObject in ShopList %}
                         <tr>
-                            <th scope="col">{{shop.username}}</th>
-                            <td scope="col"><a href="{{url_for('ShopTimeOthers', days = 3, username = shop.username)}}">General Statistics</a></td>
-                            <td scope="col"><a href="{{url_for('ShopTransactionsOthers', username = shop.username)}}">Past Transactions</a></td>
-                            <td scope="col"><a href="{{url_for('ShopItemsOthers', username = shop.username)}}">Item List</a></td>
+                            {% if not isShopObject %}
+                                <th scope="col">{{shop.username}}</th>
+                                <th scope="col">Default (Unsorted)</th>
+                                <td scope="col"><a href="{{url_for('ShopTimeView', days = 3, username = shop.username, shopID = 0)}}">General Statistics</a></td>
+                                <td scope="col"><a href="{{url_for('ShopTransactionsView', username = shop.username, shopID = 0)}}">Past Transactions</a></td>
+                                <td scope="col"><a href="{{url_for('ShopItems', username = shop.username, shopID = 0)}}">Item List</a></td>
+                            {% else %}
+                                <th scope="col">{{shop.owner}}</th>
+                                <th scope="col">{{shop.name}}</th>
+                                <td scope="col"><a href="{{url_for('ShopTimeView', days = 3, username = shop.owner, shopID = shop.id)}}">General Statistics</a></td>
+                                <td scope="col"><a href="{{url_for('ShopTransactionsView', username = shop.owner, shopID = shop.id)}}">Past Transactions</a></td>
+                                <td scope="col"><a href="{{url_for('ShopItems', username = shop.owner, shopID = shop.id)}}">Item List</a></td>
+
+                            {% endif %}
                         </tr>
                         {% endfor %}
                     </tbody>

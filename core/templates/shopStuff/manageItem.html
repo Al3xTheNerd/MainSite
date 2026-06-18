@@ -9,19 +9,27 @@
             <div class="card-body">
                 <form method="POST" class="text-black">
                     <div class="form-floating mb-3">
-                        <input type="text" class="form-control" name='buyPrice' id="buyGroup"
-                            placeholder="Buy Price", value="{{item.BuyPrice}}">
+                        <input type="text" class="form-control" name='buyPrice' id="buyGroup" placeholder="Buy Price" ,
+                            value="{{item.BuyPrice}}">
                         <label for="buyGroup">Buy Price</label>
                     </div>
                     <div class="form-floating mb-3">
-                        <input type="text" class="form-control" name='sellPrice' id="sellGroup"
-                            placeholder="Sell Price", value="{{item.SellPrice}}">
+                        <input type="text" class="form-control" name='sellPrice' id="sellGroup" placeholder="Sell Price"
+                            , value="{{item.SellPrice}}">
                         <label for="sellGroup">Sell Price</label>
                     </div>
                     <div class="form-floating mb-3">
-                        <input type="text" class="form-control" name='stock' id="stockGroup"
-                            placeholder="Current Stock", value="{{item.StockLevel}}">
+                        <input type="text" class="form-control" name='stock' id="stockGroup" placeholder="Current Stock"
+                            , value="{{item.StockLevel}}">
                         <label for="stockGroup">Current Stock (Optional)</label>
+                    </div>
+                    <div class="input-group mb-3">
+                        <label class="input-group-text" for="ShopSelectEdit">Shop</label>
+                        <select name='Shop' class="form-select" id="ShopSelectEdit">
+                            {% for id, details in currentShops.items() %}
+                            <option value="{{ id }}"{% if item.Shop == id %}selected{% endif %}>{{ details["ShopName"] }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <button class="btn btn-primary mb-1" type="submit">Update Item</button>
                 </form>

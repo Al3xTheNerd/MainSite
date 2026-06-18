@@ -30,16 +30,19 @@
                         <div class="dropdown-divider"></div>
                         {% if current_user.adminPermissions >= 10 %}
                             <li><a class="dropdown-item{%if request.path.startswith('/shop/time')%} active{%endif%}"
-                                href="{{ url_for('ShopTimeSelf', days = 3)}}">General Statistics</a></li>
-                            <li><a class="dropdown-item{%if request.path == url_for('ShopTransactionsSelf')%} active{%endif%}"
-                                href="{{ url_for('ShopTransactionsSelf')}}">Past Transactions</a></li>
-                            <li><a class="dropdown-item{%if request.path == url_for('ShopItems')%} active{%endif%}"
-                                href="{{ url_for('ShopItems')}}">Item List</a></li>
+                                href="{{ url_for('ShopTimeView', days = 3, username = current_user.username, shopID = 0)}}">General Statistics</a></li>
+                            <li><a class="dropdown-item{%if request.path == url_for('ShopTransactionsView', username=current_user.username, shopID = 0)%} active{%endif%}"
+                                href="{{ url_for('ShopTransactionsView', username=current_user.username, shopID = 0)}}">Past Transactions</a></li>
+                            <li><a class="dropdown-item{%if request.path == url_for('ShopItems', username=current_user.username, shopID = 0)%} active{%endif%}"
+                                href="{{ url_for('ShopItems', username=current_user.username, shopID = 0)}}">Item List</a></li>
                             <li><a class="dropdown-item{%if request.path == url_for('ShopExcludedItems')%} active{%endif%}"
                                 href="{{ url_for('ShopExcludedItems')}}">Excluded Item List</a></li>
                             
-                            <li><a class="dropdown-item{%if request.path == url_for('ShopSetStaff')%} active{%endif%}"
-                                href="{{ url_for('ShopSetStaff')}}">Set Staff</a></li>
+                            <li><a class="dropdown-item{%if request.path == url_for('ShopManageShops')%} active{%endif%}"
+                                href="{{ url_for('ShopManageShops')}}">Manage Shops</a></li>
+                            <li><a class="dropdown-item{%if request.path == url_for('ShopBulkChangeShops')%} active{%endif%}"
+                                href="{{ url_for('ShopBulkChangeShops')}}">Bulk Change Shops</a></li>
+                                
                             <div class="dropdown-divider"></div>
                         {% endif %}
                         {% if current_user.adminPermissions >= 100 %}

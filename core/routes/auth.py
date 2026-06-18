@@ -13,7 +13,7 @@ def randomCode(length: int) -> str:
 def login():
     if current_user.is_authenticated:
         flash("You're already logged in, silly goose.", "info")
-        return redirect(url_for('index'))
+        return redirect(url_for("ShopViewShops"))
     return render_template('auth/login.html')
 
 @app.route('/login', methods=['POST'])
@@ -32,7 +32,7 @@ def login_post():
 
     # if the above check passes, then we know the user has the right credentials
     login_user(user, remember=remember)
-    return redirect(url_for('ShopTransactionsSelf'))
+    return redirect(url_for('ShopViewShops'))
 
 @app.route('/signup')
 def signup():

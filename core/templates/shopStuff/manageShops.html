@@ -1,0 +1,111 @@
+{% set fixed_height = false %}
+{% set show_alerts = true %}
+{% extends "core_layout.html" %}
+{% block content %}
+<div class="row gx-3 gy-3 mb-3 mt-0">
+    <div class="col">
+        <div class="card h-100 text-white bg-dark border-white">
+            <h3 class="card-header border-white">Manage Shops</h3>
+            <div class="card-body">
+                <p class="card-text">This page is used to create, edit, or delete shops from the
+                    database.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row gx-3 gy-3">
+    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
+        <div class="card h-100 text-white bg-dark border-white">
+            <h3 class="card-header">Edit Shops</h3>
+            <div class="card-body">
+                <form method="post" action="" class="text-black">
+                    <div class="input-group mb-3">
+                        <label class="input-group-text" for="ShopSelectEdit">Shop</label>
+                        <select name='Shop' class="form-select" id="ShopSelectEdit" onchange="updateShopEdit()">
+                            {% for id, details in currentShops.items() %}
+                            <option value="{{ id }}">{{ details["ShopName"] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" name='ShopName' id="ShopNameGroup"
+                            placeholder="Shop Name">
+                        <label for="ShopNameGroup">Shop Name</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" name='ShopStaff' id="ShopStaffGroup"
+                            placeholder="Shop Staff">
+                        <label for="ShopStaffGroup">Shop Staff</label>
+                    </div>
+                    <button class="btn btn-primary mb-1" name="Edit" type="submit">Edit Shop!</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
+        <div class="card h-100 text-white bg-dark border-white">
+            <h3 class="card-header">Create Shop</h3>
+            <div class="card-body">
+                <form method="post" action="" class="text-black">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" name='ShopName' id="ShopNameGroup"
+                            placeholder="Shop Name">
+                        <label for="ShopNameGroup">Shop Name</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" name='ShopStaff' id="ShopStaffGroup"
+                            placeholder="Shop Staff">
+                        <label for="ShopStaffGroup">Shop Staff</label>
+                    </div>
+                    <button class="btn btn-primary mb-1" name="New" type="submit">Add Shop!</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
+        <div class="card h-100 text-white bg-dark border-white">
+            <h3 class="card-header">Delete Shops</h3>
+            <div class="card-body">
+                <form method="post" action="" class="text-black">
+                    <div class="input-group mb-3">
+                        <label class="input-group-text" for="ShopSelectEdit">Shop</label>
+                        <select name='Shop' class="form-select" id="ShopSelectEdit" onchange="updateShopEdit()">
+                            {% for id, details in currentShops.items() %}
+                                {% if id != 0 %}
+                            <option value="{{ id }}">{{ details["ShopName"] }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button class="btn btn-primary mb-1" name="Delete" type="submit">Delete Shop.</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const currentShops = {{ currentShops | tojson }};
+    console.log(currentShops)
+
+    function updateShopEdit() {
+        selectedValue = document.getElementById("ShopSelectEdit").value;
+        if (selectedValue == 0) {
+            document.getElementById("ShopNameGroup").disabled = true;
+        } else {
+            document.getElementById("ShopNameGroup").disabled = false;
+        }
+        document.getElementById("ShopNameGroup").value = currentShops[selectedValue]["ShopName"];
+        document.getElementById("ShopStaffGroup").value = currentShops[selectedValue]["StaffMembers"];
+        console.log(currentShops[selectedValue]["StaffMembers"])
+    }
+
+
+    updateShopEdit()
+</script>
+
+
+
+
+
+{% endblock %}

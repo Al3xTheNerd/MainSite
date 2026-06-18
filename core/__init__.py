@@ -22,6 +22,8 @@ with app.app_context():
     for item in Items.query.all():
         if item.Excluded == None:
             item.Excluded = 0
+        if item.Shop == None:
+            item.Shop = 0
     db.session.commit()
 login_manager = LoginManager(app=app)
 login_manager.login_view = '/login' # type: ignore

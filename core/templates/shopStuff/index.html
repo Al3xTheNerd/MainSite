@@ -6,14 +6,14 @@
 <div class="row gx-3 gy-3 mb-3 mt-0">
     <div class="col">
         <div class="card h-100 text-white bg-dark border-white">
-            <h3 class="card-header border-white">General Statistics</h3>
+            <h3 class="card-header border-white">General Statistics <code>{{username}} - {{shopName}}</code></h3>
             <div class="card-body">
                 <p class="card-text">Some general information will be shown here.</p>
             </div>
             <div class="card-footer border-white">
-            <a href="/shop/time/1" class="btn btn-secondary">1 Day</a>
+            <a href="/shop/time/{{username}}/{{shopID}}/1" class="btn btn-secondary">1 Day</a>
                 {% for defaultTimeframe in stats["defaults"] %}
-                <a href="/shop/time/{{defaultTimeframe}}" class="btn btn-secondary">{{defaultTimeframe}} Days</a>
+                <a href="/shop/time/{{username}}/{{shopID}}/{{defaultTimeframe}}" class="btn btn-secondary">{{defaultTimeframe}} Days</a>
                 {% endfor %}
             </div>
         </div>
