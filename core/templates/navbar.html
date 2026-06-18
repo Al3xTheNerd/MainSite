@@ -17,7 +17,6 @@
             <li class="nav-item"><a class="nav-link" href="{{ url_for(loc) }}">{{name}}</a></li>
             {% endif %}
             {% endfor %}
-
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                     aria-expanded="false">
@@ -29,12 +28,6 @@
                             href="{{ url_for('ShopViewShops')}}">Other Shops</a></li>
                         <div class="dropdown-divider"></div>
                         {% if current_user.adminPermissions >= 10 %}
-                            <li><a class="dropdown-item{%if request.path.startswith('/shop/time')%} active{%endif%}"
-                                href="{{ url_for('ShopTimeView', days = 3, username = current_user.username, shopID = 0)}}">General Statistics</a></li>
-                            <li><a class="dropdown-item{%if request.path == url_for('ShopTransactionsView', username=current_user.username, shopID = 0)%} active{%endif%}"
-                                href="{{ url_for('ShopTransactionsView', username=current_user.username, shopID = 0)}}">Past Transactions</a></li>
-                            <li><a class="dropdown-item{%if request.path == url_for('ShopItems', username=current_user.username, shopID = 0)%} active{%endif%}"
-                                href="{{ url_for('ShopItems', username=current_user.username, shopID = 0)}}">Item List</a></li>
                             <li><a class="dropdown-item{%if request.path == url_for('ShopExcludedItems')%} active{%endif%}"
                                 href="{{ url_for('ShopExcludedItems')}}">Excluded Item List</a></li>
                             
@@ -57,6 +50,26 @@
                     {% endif %}
                 </ul>
             </li>
+            {% for shop in ShopsList %}
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                    {{shop[0]}}
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark">
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.adminPermissions >= 10 %}
+                            <li><a class="dropdown-item{%if request.path.startswith('/shop/time/' ~ current_user.username ~ '/' ~ shop[1])%} active{%endif%}"
+                                href="{{ url_for('ShopTimeView', days = 3, username = current_user.username, shopID = shop[1])}}">General Statistics</a></li>
+                            <li><a class="dropdown-item{%if request.path == url_for('ShopTransactionsView', username=current_user.username, shopID = shop[1])%} active{%endif%}"
+                                href="{{ url_for('ShopTransactionsView', username=current_user.username, shopID = shop[1])}}">Past Transactions</a></li>
+                            <li><a class="dropdown-item{%if request.path == url_for('ShopItems', username=current_user.username, shopID = shop[1])%} active{%endif%}"
+                                href="{{ url_for('ShopItems', username=current_user.username, shopID = shop[1])}}">Item List</a></li>                            
+                        {% endif %}
+                    {% endif %}
+                </ul>
+            </li>
+            {% endfor %}
         </ul>
     </div>
     </div>

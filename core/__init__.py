@@ -18,7 +18,6 @@ db = SQLAlchemy(app)
 from core.models import *
 with app.app_context():
     db.create_all()
-
     for item in Items.query.all():
         if item.Excluded == None:
             item.Excluded = 0
@@ -42,3 +41,19 @@ app.jinja_env.filters['datetime'] = format_datetime
 
 
 from core.routes import *
+
+@app.context_processor
+def navbarStuff():
+    if current_user.is_authenticated:
+        shops = Shops.query.filter(Shops.owner == current_user.username).all()
+        
+        shopList = [
+            ('Default (Unsorted)', 0)
+        ]
+        for shop in shops:
+            shopList.append((shop.name, shop.id))
+        config = {
+            'ShopsList' : shopList
+        }
+    else: return {}
+    return config
