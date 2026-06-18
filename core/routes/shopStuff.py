@@ -250,6 +250,37 @@ def ShopBulkChangeShops():
     return render_template("shopStuff/bulkShopChanges.html", validItems = validItems, currentShops = shops)
 
 @permission_level_required(10)
+@app.route('/shop/bulkChangeShopsUnsortedOnly', methods=["GET"])
+def ShopBulkChangeShopsUnsortedOnly():
+    validItems = Items.query.filter(Items.ShopOwner == current_user.username, Items.Shop == 0).all()
+    shops = currentShopsData()
+    return render_template("shopStuff/bulkShopChanges.html", validItems = validItems, currentShops = shops)
+
+@permission_level_required(10)
+@app.route('/shop/bulkChangeShopsUnsortedOnly', methods=["POST"])
+def ShopBulkChangeShopsUnsortedOnly_POST():
+    validItems: List[Items] = Items.query.filter(Items.ShopOwner == current_user.username).all()
+    shopID = int(request.form.get('Shop', 0))
+    shop = Shops.query.filter(Shops.owner == current_user.username, Shops.id == shopID).one_or_none()
+    if not isinstance(shop, Shops) and shopID != 0:
+        flash("Shop does not exist.")
+        return redirect(url_for("ShopViewShops"))
+    if shopID == 0:
+        shopName = defaultShopName
+    else:
+        shopName = shop.name # type: ignore
+    items = [int(x) for x in request.form.getlist("items")]
+    changeCounter = 0
+    for item in validItems:
+        if item.id in items:
+            if item.Shop != shopID:
+                item.Shop = shopID
+                changeCounter += 1
+    db.session.commit()
+    flash(f"<code>{changeCounter}</code> items swapped to be part of <code>{shopName}</code>")
+    return redirect(url_for("ShopBulkChangeShops"))
+
+@permission_level_required(10)
 @app.route('/shop/bulkChangeShops', methods=["POST"])
 def ShopBulkChangeShops_POST():
     validItems: List[Items] = Items.query.filter(Items.ShopOwner == current_user.username).all()

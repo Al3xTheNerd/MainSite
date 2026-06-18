@@ -35,6 +35,8 @@
                                 href="{{ url_for('ShopManageShops')}}">Manage Shops</a></li>
                             <li><a class="dropdown-item{%if request.path == url_for('ShopBulkChangeShops')%} active{%endif%}"
                                 href="{{ url_for('ShopBulkChangeShops')}}">Bulk Change Shops</a></li>
+                            <li><a class="dropdown-item{%if request.path == url_for('ShopBulkChangeShopsUnsortedOnly')%} active{%endif%}"
+                                href="{{ url_for('ShopBulkChangeShopsUnsortedOnly')}}">Bulk Change Shops (unsorted only)</a></li>
                                 
                             <div class="dropdown-divider"></div>
                         {% endif %}
