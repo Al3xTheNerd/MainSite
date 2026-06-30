@@ -2,9 +2,13 @@ from flask import render_template, redirect, url_for, request, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required, current_user
 from core.models import User
+from core.models.items import Items
+from core.models.shopLogs import ShopLogs
+from core.models.shops import Shops
 from core import db, app
 from core.decorators import permission_level_required
 import random, string
+from typing import List
 
 def randomCode(length: int) -> str:
     return ''.join(random.choice(string.digits + string.ascii_lowercase) for _ in range(length))
@@ -141,16 +145,38 @@ def manageUsers():
 @permission_level_required(90)
 def manageUser(userID: int):
     user: User | None = User.query.filter(User.id == userID).first()
-    if not user:
+    if not isinstance(user, User):
         flash("User does not exist, try again when you're not incompetent.")
         return redirect(url_for('manageUsers'))
     
     if current_user.adminPermissions > user.adminPermissions:
         if request.method == "POST":
             newLevel = int(request.form.to_dict()["level"])
-            user.adminPermissions = newLevel
+            newName = str(request.form.to_dict()["username"])
+            if newLevel != user.adminPermissions:
+                user.adminPermissions = newLevel
+                flash(f"Permissions for user {user.username} set to <code>{newLevel}</code>")
+            if newName != user.username:
+                oldName = user.username
+                # Update Shop Logs
+                shopLogs: List[ShopLogs] = ShopLogs.query.filter(ShopLogs.ShopOwner == user.username).all()
+                for log in shopLogs:
+                    log.ShopOwner = newName
+                flash(f"Updated {len(shopLogs)} transactions. Shop Owner: <code>{user.username}</code>-><code>{newName}</code>")
+                # Update Item List
+                itemList: List[Items] = Items.query.filter(Items.ShopOwner == user.username).all()
+                for item in itemList:
+                    item.ShopOwner = newName
+                flash(f"Updated {len(itemList)} items. Shop Owner: <code>{user.username}</code>-><code>{newName}</code>")
+                # Update Shop List
+                shopList: List[Shops] = Shops.query.filter(Shops.owner == user.username).all()
+                for shop in shopList:
+                    shop.owner = newName
+                flash(f"Updated {len(shopList)} shops. Shop Owner: <code>{user.username}</code>-><code>{newName}</code>")
+                # Change the username
+                user.username = newName
+                flash(f"Updated login info. Username: <code>{oldName}</code>-><code>{newName}</code>")
             db.session.commit()
-            flash(f"Permissions for user {user.username} set to <code>{newLevel}</code>")
             return redirect(url_for('manageUsers'))
         
     else:
