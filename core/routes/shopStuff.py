@@ -501,7 +501,7 @@ def hook():
                     name = match.group(1)
                     quantity = int(match.group(2))
                     item = match.group(3) + appendStr
-                    item = getOrCreateListing(match.group(3), "add", quantity, username=message["username"])
+                    item = getOrCreateListing(match.group(3) + appendStr, "add", quantity, username=message["username"])
                     if item.BuyPrice != 0.00:
                         money = item.BuyPrice * quantity
                     else:
@@ -515,7 +515,7 @@ def hook():
                     quantity = int(match.group(2))
                     item = match.group(3) + appendStr
                     dollars = float(match.group(4).replace(',', ''))
-                    item = getOrCreateListing(match.group(3), "subtract", quantity, dollars/quantity, username=message["username"])
+                    item = getOrCreateListing(match.group(3) + appendStr, "subtract", quantity, dollars/quantity, username=message["username"])
                     db.session.add(ShopLogs(Type = "from", Interactor = name, Quantity = quantity, Item = item.id, Money = dollars, TimeStamp = message["time"], ShopOwner=message["username"])) # type: ignore
             
             #case "out":
