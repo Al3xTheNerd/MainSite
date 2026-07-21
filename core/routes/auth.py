@@ -74,7 +74,7 @@ def signup_post():
     if User.query.count() < 1:
         new_user.adminPermissions = 100
     else:
-        new_user.adminPermissions = 0
+        new_user.adminPermissions = 10
 
     # add the new user to the database
     db.session.add(new_user)
