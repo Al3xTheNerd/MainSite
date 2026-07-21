@@ -491,7 +491,7 @@ def hook():
         if "itemList" in message:
             appendStr += "("
             print(message["itemList"])
-            items = ", ".join([f"{item}: {message['itemList'][item]}" for item in message["itemList"].keys()])
+            appendStr += ", ".join([f"{item}: {message['itemList'][item]}" for item in message["itemList"].keys()])
             appendStr += ")"
         match message["type"]:
             case "to":
