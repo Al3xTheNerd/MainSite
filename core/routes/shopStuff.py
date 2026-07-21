@@ -487,6 +487,8 @@ def hook():
     data = request.get_json()
     entries = []
     for message in data["messages"]:
+        if "itemList" in message:
+            print(message["itemList"])
         match message["type"]:
             case "to":
                 pattern = r"(\w+)\s+sold\s+(\d+)\s+(.+?)\s+to your shop\."
