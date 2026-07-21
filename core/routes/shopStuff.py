@@ -487,8 +487,12 @@ def hook():
     data = request.get_json()
     entries = []
     for message in data["messages"]:
+        appendStr = ""
         if "itemList" in message:
+            appendStr += "("
             print(message["itemList"])
+            items = ", ".join([f"{item}: {message['itemList'][item]}" for item in message["itemList"].keys()])
+            appendStr += ")"
         match message["type"]:
             case "to":
                 pattern = r"(\w+)\s+sold\s+(\d+)\s+(.+?)\s+to your shop\."
@@ -496,7 +500,7 @@ def hook():
                 if match:
                     name = match.group(1)
                     quantity = int(match.group(2))
-                    item = match.group(3)
+                    item = match.group(3) + appendStr
                     item = getOrCreateListing(match.group(3), "add", quantity, username=message["username"])
                     if item.BuyPrice != 0.00:
                         money = item.BuyPrice * quantity
@@ -509,7 +513,7 @@ def hook():
                 if match:
                     name = match.group(1)
                     quantity = int(match.group(2))
-                    item = match.group(3)
+                    item = match.group(3) + appendStr
                     dollars = float(match.group(4).replace(',', ''))
                     item = getOrCreateListing(match.group(3), "subtract", quantity, dollars/quantity, username=message["username"])
                     db.session.add(ShopLogs(Type = "from", Interactor = name, Quantity = quantity, Item = item.id, Money = dollars, TimeStamp = message["time"], ShopOwner=message["username"])) # type: ignore
