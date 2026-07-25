@@ -40,6 +40,7 @@ def ShopTime(days, username, shopID):
     EpochTimeFrame = int(time.time()*1000) - (24*int(days)*60*60*1000)
     
     PeopleWhoSoldTheMost = {}
+    PeopleWhoSoldTheMostValue = {}
     PeopleWhoBoughtTheMost = {}
     PeopleWhoBoughtTheMostValue = {}
     
@@ -58,13 +59,14 @@ def ShopTime(days, username, shopID):
         if log.Type == "to":
             if log.Money:
                 CashSpentOnBuying += log.Money
+                PeopleWhoSoldTheMostValue[log.Interactor] = PeopleWhoSoldTheMostValue.get(log.Interactor, 0) + log.Money
             ItemsBought += log.Quantity
             PeopleWhoSoldTheMost[log.Interactor] = PeopleWhoSoldTheMost.get(log.Interactor, 0) + log.Quantity
             MostPurchasedItems[log.Item] = MostPurchasedItems.get(log.Item, 0) + log.Quantity
         else:
             if log.Money:
                 CashEarnedFromSelling += log.Money
-                PeopleWhoBoughtTheMostValue[log.Interactor] = PeopleWhoBoughtTheMostValue.get(log.Interactor, 0) + log.Money
+                PeopleWhoBoughtTheMostValue[log.Interactor] = round(PeopleWhoBoughtTheMostValue.get(log.Interactor, 0) + log.Money, 2)
             ItemsSold += log.Quantity
             PeopleWhoBoughtTheMost[log.Interactor] = PeopleWhoBoughtTheMost.get(log.Interactor, 0) + log.Quantity
             MostSoldItems[log.Item] = MostSoldItems.get(log.Item, 0) + log.Quantity
@@ -75,6 +77,7 @@ def ShopTime(days, username, shopID):
         "total" : NetAmount,
         "days" : days,
         "PeopleWhoSoldTheMost" : sortDict(PeopleWhoSoldTheMost, True),
+        "PeopleWhoSoldTheMostValue" : sortDict(PeopleWhoSoldTheMostValue, True),
         "PeopleWhoBoughtTheMost" : sortDict(PeopleWhoBoughtTheMost, True),
         "PeopleWhoBoughtTheMostValue" : sortDict(PeopleWhoBoughtTheMostValue, True),
         "MostPurchasedItems" : sortDict(MostPurchasedItems, True),
@@ -493,6 +496,8 @@ def hook():
             print(message["itemList"])
             appendStr += ", ".join([f"{item}: {message['itemList'][item]}" for item in message["itemList"].keys()])
             appendStr += ")"
+            if appendStr == "()":
+                appendStr = ""
         match message["type"]:
             case "to":
                 pattern = r"(\w+)\s+sold\s+(\d+)\s+(.+?)\s+to your shop\."

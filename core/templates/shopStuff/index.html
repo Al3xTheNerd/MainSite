@@ -2,7 +2,7 @@
 {% set show_alerts = true %}
 {% extends "core_layout.html" %}
 {% block content %}
-
+{% set ns = namespace(MostSoldItemsExpand = false, PeopleWhoBoughtTheMostValueExpand = false, PeopleWhoBoughtTheMostExpand = false, MostPurchasedItemsExpand = false, PeopleWhoSoldTheMostValueExpand = false, PeopleWhoSoldTheMostExpand = false) %}
 <div class="row gx-3 gy-3 mb-3 mt-0">
     <div class="col">
         <div class="card h-100 text-white bg-dark border-white">
@@ -11,15 +11,16 @@
                 <p class="card-text">Some general information will be shown here.</p>
             </div>
             <div class="card-footer border-white">
-            <a href="/shop/time/{{username}}/{{shopID}}/1" class="btn btn-secondary">1 Day</a>
+                <a href="/shop/time/{{username}}/{{shopID}}/1" class="btn btn-secondary">1 Day</a>
                 {% for defaultTimeframe in stats["defaults"] %}
-                <a href="/shop/time/{{username}}/{{shopID}}/{{defaultTimeframe}}" class="btn btn-secondary">{{defaultTimeframe}} Days</a>
+                <a href="/shop/time/{{username}}/{{shopID}}/{{defaultTimeframe}}"
+                    class="btn btn-secondary">{{defaultTimeframe}} Days</a>
                 {% endfor %}
             </div>
         </div>
     </div>
 </div>
-<div class="row gx-3 gy-3">
+<div class="row gx-3 gy-3 mb-3">
     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
         <div class="card h-100 text-white bg-dark border-white">
             <div class="card-body">
@@ -36,52 +37,60 @@
             </div>
         </div>
     </div>
+</div>
+<div class="row gx-3 gy-3 mb-3">
     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
         <div class="card h-100 text-white bg-dark border-white">
             <div class="card-body">
-                <h4 class="card-title">Last {{stats["days"]}} Days Who sold you the most items?</h4>
+                <h4 class="card-title">Last {{stats["days"]}} Days Who sold you the most items? (quantity)</h4>
                 <ul>
                     {% for person, amount in stats["PeopleWhoSoldTheMost"].items() %}
-                        <li>{{person}} - {{amount}} items</li>
+                    <li>{{person}} - {{amount}} items</li>
+                    {% if loop.index0 == 4 %}
+                    {% set ns.PeopleWhoSoldTheMostExpand = true%}
+                    <div class="collapse" id="PeopleWhoSoldTheMost">
+                    {% endif %}
                     {% endfor %}
+                    {% if ns.PeopleWhoSoldTheMostExpand == true %}
+                    </div>
+                    {%endif%}
                 </ul>
             </div>
+            {% if ns.PeopleWhoSoldTheMostExpand == true %}
+            <div class="card-footer border-white">
+                <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#PeopleWhoSoldTheMost" aria-expanded="false" aria-controls="PeopleWhoSoldTheMost">
+                    Show More
+                </button>
+            </div>
+            {% endif %}
         </div>
     </div>
     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
         <div class="card h-100 text-white bg-dark border-white">
             <div class="card-body">
-                <h4 class="card-title">Last {{stats["days"]}} Days Who bought the most from you? (quantity)</h4>
+                <h4 class="card-title">Last {{stats["days"]}} Days Who sold you the most items? (value)</h4>
                 <ul>
-                    {% for person, amount in stats["PeopleWhoBoughtTheMost"].items() %}
-                        <li>{{person}} - {{amount}} items</li>
+                    {% for person, amount in stats["PeopleWhoSoldTheMostValue"].items() %}
+                    <li>{{person}} - ${{amount}}</li>
+                    {% if loop.index0 == 4 %}
+                    {% set ns.PeopleWhoSoldTheMostValueExpand = true%}
+                    <div class="collapse" id="PeopleWhoSoldTheMostValue">
+                    {% endif %}
                     {% endfor %}
+                    {% if ns.PeopleWhoSoldTheMostValueExpand == true %}
+                    </div>
+                    {%endif%}
                 </ul>
             </div>
-        </div>
-    </div>
-    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
-        <div class="card h-100 text-white bg-dark border-white">
-            <div class="card-body">
-                <h4 class="card-title">Last {{stats["days"]}} Days Who bought the most from you? (value)</h4>
-                <ul>
-                    {% for person, amount in stats["PeopleWhoBoughtTheMostValue"].items() %}
-                        <li>{{person}} - ${{amount}}</li>
-                    {% endfor %}
-                </ul>
+            {% if ns.PeopleWhoSoldTheMostValueExpand == true %}
+            <div class="card-footer border-white">
+                <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#PeopleWhoSoldTheMostValue" aria-expanded="false" aria-controls="PeopleWhoSoldTheMostValue">
+                    Show More
+                </button>
             </div>
-        </div>
-    </div>
-    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
-        <div class="card h-100 text-white bg-dark border-white">
-            <div class="card-body">
-                <h4 class="card-title">Last {{stats["days"]}} Days What did you sell the most of?</h4>
-                <ul>
-                    {% for item, amount in stats["MostSoldItems"].items() %}
-                        <li>{{ItemList[item].Name}} - {{amount}}</li>
-                    {% endfor %}
-                </ul>
-            </div>
+            {%endif%}
         </div>
     </div>
     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
@@ -90,10 +99,108 @@
                 <h4 class="card-title">Last {{stats["days"]}} Days What did you buy the most of?</h4>
                 <ul>
                     {% for item, amount in stats["MostPurchasedItems"].items() %}
-                        <li>{{ItemList[item].Name}} - {{amount}}</li>
+                    <li>{{ItemList[item].Name}} - {{amount}}</li>
+                    {% if loop.index0 == 4 %}
+                    {% set ns.MostPurchasedItemsExpand = true%}
+                    <div class="collapse" id="MostPurchasedItems">
+                    {% endif %}
                     {% endfor %}
+                    {% if ns.MostPurchasedItemsExpand == true %}
+                    </div>
+                    {%endif%}
                 </ul>
             </div>
+            {% if ns.MostPurchasedItemsExpand == true %}
+            <div class="card-footer border-white">
+                <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#MostPurchasedItems" aria-expanded="false" aria-controls="MostPurchasedItems">
+                    Show More
+                </button>
+            </div>
+            {%endif%}
+        </div>
+    </div>
+</div>
+<div class="row gx-3 gy-3 mb-3">
+    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
+        <div class="card h-100 text-white bg-dark border-white">
+            <div class="card-body">
+                <h4 class="card-title">Last {{stats["days"]}} Days Who bought the most from you? (quantity)</h4>
+                <ul>
+                    {% for person, amount in stats["PeopleWhoBoughtTheMost"].items() %}
+                    <li>{{person}} - {{amount}} items</li>
+                    {% if loop.index0 == 4 %}
+                    {% set ns.PeopleWhoBoughtTheMostExpand = true%}
+                    <div class="collapse" id="PeopleWhoBoughtTheMost">
+                    {% endif %}
+                    {% endfor %}
+                    {% if ns.PeopleWhoBoughtTheMostExpand == true %}
+                    </div>
+                    {%endif%}
+                </ul>
+            </div>
+            {% if ns.PeopleWhoBoughtTheMostExpand == true %}
+            <div class="card-footer border-white">
+                <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#PeopleWhoBoughtTheMost" aria-expanded="false" aria-controls="PeopleWhoBoughtTheMost">
+                    Show More
+                </button>
+            </div>
+            {%endif%}
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
+        <div class="card h-100 text-white bg-dark border-white">
+            <div class="card-body">
+                <h4 class="card-title">Last {{stats["days"]}} Days Who bought the most from you? (value)</h4>
+                <ul>
+                    {% for person, amount in stats["PeopleWhoBoughtTheMostValue"].items() %}
+                    <li>{{person}} - ${{amount}}</li>
+                    {% if loop.index0 == 4 %}
+                    {% set ns.PeopleWhoBoughtTheMostValueExpand = true%}
+                    <div class="collapse" id="PeopleWhoBoughtTheMostValue">
+                    {% endif %}
+                    {% endfor %}
+                    {% if ns.PeopleWhoBoughtTheMostValueExpand == true %}
+                    </div>
+                    {%endif%}
+                </ul>
+            </div>
+            {% if ns.PeopleWhoBoughtTheMostValueExpand == true %}
+            <div class="card-footer border-white">
+                <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#PeopleWhoBoughtTheMostValue" aria-expanded="false" aria-controls="PeopleWhoBoughtTheMostValue">
+                    Show More
+                </button>
+            </div>
+            {%endif%}
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
+        <div class="card h-100 text-white bg-dark border-white">
+            <div class="card-body">
+                <h4 class="card-title">Last {{stats["days"]}} Days What did you sell the most of?</h4>
+                <ul>
+                    {% for item, amount in stats["MostSoldItems"].items() %}
+                    <li>{{ItemList[item].Name}} - {{amount}}</li>
+                    {% if loop.index0 == 4 %}
+                    {% set ns.MostSoldItemsExpand = true%}
+                    <div class="collapse" id="MostSoldItems">
+                    {% endif %}
+                    {% endfor %}
+                    {% if ns.MostSoldItemsExpand == true %}
+                    </div>
+                    {%endif%}
+                </ul>
+            </div>
+            {% if ns.MostSoldItemsExpand == true %}
+            <div class="card-footer border-white">
+                <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#MostSoldItems" aria-expanded="false" aria-controls="MostSoldItems">
+                    Show More
+                </button>
+            </div>
+            {%endif%}
         </div>
     </div>
 </div>
