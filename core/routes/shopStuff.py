@@ -59,7 +59,7 @@ def ShopTime(days, username, shopID):
         if log.Type == "to":
             if log.Money:
                 CashSpentOnBuying += log.Money
-                PeopleWhoSoldTheMostValue[log.Interactor] = PeopleWhoSoldTheMostValue.get(log.Interactor, 0) + log.Money
+                PeopleWhoSoldTheMostValue[log.Interactor] = round(PeopleWhoSoldTheMostValue.get(log.Interactor, 0) + log.Money, 2)
             ItemsBought += log.Quantity
             PeopleWhoSoldTheMost[log.Interactor] = PeopleWhoSoldTheMost.get(log.Interactor, 0) + log.Quantity
             MostPurchasedItems[log.Item] = MostPurchasedItems.get(log.Item, 0) + log.Quantity
