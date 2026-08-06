@@ -431,7 +431,7 @@ def ShopViewShops():
 def getOrCreateListing(ItemName: str, Action: str, Amount: int, PricePerItem: float | None = None, username = None) -> Items:
     if PricePerItem:
         UntaxedPrice = round(PricePerItem / 0.99, 2)
-    item: Items | None = Items.query.filter_by(Name = ItemName, ShopOwner = username).one_or_none()
+    item: Items | None = Items.query.filter_by(Name = ItemName, ShopOwner = username).first()
     if not item:
         item = Items()
         item.Name = ItemName
@@ -488,46 +488,40 @@ def ShopFixOld():
 @app.route('/hook', methods=['POST'])
 def hook():
     data = request.get_json()
-    print(data)
-    entries = []
     for message in data["messages"]:
-        try:
-            appendStr = ""
-            if "itemList" in message:
-                appendStr += "("
-                print(message["itemList"])
-                appendStr += ", ".join([f"{item}: {message['itemList'][item]}" for item in message["itemList"].keys()])
-                appendStr += ")"
-                if appendStr == "()":
-                    appendStr = ""
-            match message["type"]:
-                case "to":
-                    pattern = r"(\w+)\s+sold\s+(\d+)\s+(.+?)\s+to your shop\."
-                    match = re.search(pattern, message["message"])
-                    if match:
-                        name = match.group(1)
-                        quantity = int(match.group(2))
-                        item = match.group(3) + appendStr
-                        item = getOrCreateListing(match.group(3) + appendStr, "add", quantity, username=message["username"])
-                        if item.BuyPrice != 0.00:
-                            money = item.BuyPrice * quantity
-                        else:
-                            money = 0.0
-                        db.session.add(ShopLogs(Type = "to", Interactor = name, Quantity = quantity, Item = item.id, TimeStamp = message["time"], ShopOwner=message["username"], Money = money)) # type: ignore
-                case "from":
-                    pattern = r"(\w+)\s+purchased\s+(\d+)\s+(.+?)\s+from your shop, and you earned\s+\$([\d,]+(?:\.\d+)?)"
-                    match = re.search(pattern, message["message"])
-                    if match:
-                        name = match.group(1)
-                        quantity = int(match.group(2))
-                        item = match.group(3) + appendStr
-                        dollars = float(match.group(4).replace(',', ''))
-                        item = getOrCreateListing(match.group(3) + appendStr, "subtract", quantity, dollars/quantity, username=message["username"])
-                        db.session.add(ShopLogs(Type = "from", Interactor = name, Quantity = quantity, Item = item.id, Money = dollars, TimeStamp = message["time"], ShopOwner=message["username"])) # type: ignore
-                case _:
-                    pass
-            db.session.commit()
-        except Exception as e:
-            print(e)
+        appendStr = ""
+        if "itemList" in message:
+            appendStr += "("
+            appendStr += ", ".join([f"{item}: {message['itemList'][item]}" for item in message["itemList"].keys()])
+            appendStr += ")"
+            if appendStr == "()":
+                appendStr = ""
+        match message["type"]:
+            case "to":
+                pattern = r"(\w+)\s+sold\s+(\d+)\s+(.+?)\s+to your shop\."
+                match = re.search(pattern, message["message"])
+                if match:
+                    name = match.group(1)
+                    quantity = int(match.group(2))
+                    item = match.group(3) + appendStr
+                    item = getOrCreateListing(match.group(3) + appendStr, "add", quantity, username=message["username"])
+                    if item.BuyPrice != 0.00:
+                        money = item.BuyPrice * quantity
+                    else:
+                        money = 0.0
+                    db.session.add(ShopLogs(Type = "to", Interactor = name, Quantity = quantity, Item = item.id, TimeStamp = message["time"], ShopOwner=message["username"], Money = money)) # type: ignore
+            case "from":
+                pattern = r"(\w+)\s+purchased\s+(\d+)\s+(.+?)\s+from your shop, and you earned\s+\$([\d,]+(?:\.\d+)?)"
+                match = re.search(pattern, message["message"])
+                if match:
+                    name = match.group(1)
+                    quantity = int(match.group(2))
+                    item = match.group(3) + appendStr
+                    dollars = float(match.group(4).replace(',', ''))
+                    item = getOrCreateListing(match.group(3) + appendStr, "subtract", quantity, dollars/quantity, username=message["username"])
+                    db.session.add(ShopLogs(Type = "from", Interactor = name, Quantity = quantity, Item = item.id, Money = dollars, TimeStamp = message["time"], ShopOwner=message["username"])) # type: ignore
+            case _:
+                pass
+        db.session.commit()
     return '', 200
 
