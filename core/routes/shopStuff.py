@@ -488,6 +488,7 @@ def ShopFixOld():
 @app.route('/hook', methods=['POST'])
 def hook():
     data = request.get_json()
+    print(data)
     entries = []
     for message in data["messages"]:
         appendStr = ""
