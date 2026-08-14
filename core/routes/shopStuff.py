@@ -498,17 +498,21 @@ def hook():
                 appendStr = ""
         match message["type"]:
             case "to":
-                pattern = r"(\w+)\s+sold\s+(\d+)\s+(.+?)\s+to your shop\."
+                pattern = r"(\w+)\s+sold\s+(\d+)\s+(.+?)\s+to your shop for \$([\d,]+(?:\.\d{1,2})?)\."
+                #pattern = r"(\w+)\s+sold\s+(\d+)\s+(.+?)\s+to your shop\."
                 match = re.search(pattern, message["message"])
                 if match:
                     name = match.group(1)
                     quantity = int(match.group(2))
                     item = match.group(3) + appendStr
                     item = getOrCreateListing(match.group(3) + appendStr, "add", quantity, username=message["username"])
-                    if item.BuyPrice != 0.00:
-                        money = item.BuyPrice * quantity
+                    if match.group(4) != "{3}":
+                        if item.BuyPrice != 0.00:
+                            money = item.BuyPrice * quantity
+                        else:
+                            money = 0.0
                     else:
-                        money = 0.0
+                        money = match.group(4)
                     db.session.add(ShopLogs(Type = "to", Interactor = name, Quantity = quantity, Item = item.id, TimeStamp = message["time"], ShopOwner=message["username"], Money = money)) # type: ignore
             case "from":
                 pattern = r"(\w+)\s+purchased\s+(\d+)\s+(.+?)\s+from your shop, and you earned\s+\$([\d,]+(?:\.\d+)?)"
