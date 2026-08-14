@@ -501,7 +501,9 @@ def hook():
                 pattern = r"(\w+)\s+sold\s+(\d+)\s+(.+?)\s+to your shop for \$([\d,]+(?:\.\d{1,2})?)\."
                 #pattern = r"(\w+)\s+sold\s+(\d+)\s+(.+?)\s+to your shop\."
                 match = re.search(pattern, message["message"])
+                
                 if match:
+                    print(match.group(4))
                     name = match.group(1)
                     quantity = int(match.group(2))
                     item = match.group(3) + appendStr
