@@ -9,11 +9,12 @@
             <h3 class="card-header border-white">General Statistics <code>{{username}} - {{shopName}}</code></h3>
             <div class="card-body">
                 <p class="card-text">Some general information will be shown here.</p>
+                <p class="card-text">Filtered User: <code>{{ filterUser }}</code></p>
             </div>
             <div class="card-footer border-white">
-                <a href="/shop/time/{{username}}/{{shopID}}/1" class="btn btn-secondary">1 Day</a>
+                <a href="/shop/time/{{username}}/{{shopID}}/1{%if filterUser%}/{{filterUser}}{%endif%}" class="btn btn-secondary">1 Day</a>
                 {% for defaultTimeframe in stats["defaults"] %}
-                <a href="/shop/time/{{username}}/{{shopID}}/{{defaultTimeframe}}"
+                <a href="/shop/time/{{username}}/{{shopID}}/{{defaultTimeframe}}{%if filterUser%}/{{filterUser}}{%endif%}"
                     class="btn btn-secondary">{{defaultTimeframe}} Days</a>
                 {% endfor %}
             </div>
@@ -34,6 +35,19 @@
                     <li>Total Items Sold: {{stats["SoldQuantity"]}}</li>
                     <li>Total Items Bought: {{stats["BoughtQuantity"]}}</li>
                 </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
+        <div class="card h-100 text-white bg-dark border-white">
+            <div class="card-body">
+                <h4 class="card-title">Filter by user</h4>
+                <select class="form-select" id = "filterSelect">
+                    <option value="/shop/time/{{username}}/{{shopID}}/{{stats['days']}}">All People</option>
+                    {% for name in stats["InteractorList"] %}
+                    <option value="/shop/time/{{username}}/{{shopID}}/{{stats['days']}}/{{name}}"{%if filterUser == name%} selected{%endif%}>{{name}}</option>
+                    {% endfor %}
+                </select>
             </div>
         </div>
     </div>
@@ -204,4 +218,17 @@
         </div>
     </div>
 </div>
+<script>
+const dropdown = document.getElementById('filterSelect');
+
+// Add an event listener for when the selection changes
+dropdown.addEventListener('change', function() {
+  const url = this.value;
+  
+  // Only redirect if the user selected a valid URL (skips the placeholder)
+  if (url) {
+    window.location.href = url;
+  }
+});
+</script>
 {% endblock %}

@@ -30,7 +30,7 @@ def hasAccessToShop(shopOwner, staffList) -> bool:
                 return True
     return False
 
-def ShopTime(days, username, shopID):
+def ShopTime(days, username, shopID, filterUser: None | str = None):
     itemList: List[Items] = Items.query.filter_by(ShopOwner=username, Excluded=0, Shop=shopID).all()
     newItemList = {}
     for item in itemList:
@@ -47,13 +47,18 @@ def ShopTime(days, username, shopID):
     MostPurchasedItems = {}
     MostSoldItems = {}
     
-    transactionLogs: List[ShopLogs] = ShopLogs.query.filter(ShopLogs.ShopOwner == username, ShopLogs.TimeStamp >= EpochTimeFrame).all()
+    if filterUser:
+        transactionLogs: List[ShopLogs] = ShopLogs.query.filter(ShopLogs.ShopOwner == username, ShopLogs.TimeStamp >= EpochTimeFrame, ShopLogs.Interactor == filterUser).all()
+    else:
+        transactionLogs: List[ShopLogs] = ShopLogs.query.filter(ShopLogs.ShopOwner == username, ShopLogs.TimeStamp >= EpochTimeFrame).all()
     CashSpentOnBuying = 0.0 
     
     CashEarnedFromSelling = 0.0 
     ItemsBought = 0 
     ItemsSold = 0 
+    InteractorList = set()
     for log in transactionLogs:
+        InteractorList.add(log.Interactor)
         if log.Item not in newItemList.keys():
             continue
         if log.Type == "to":
@@ -84,14 +89,17 @@ def ShopTime(days, username, shopID):
         "MostSoldItems" : sortDict(MostSoldItems, True),
         "defaults" : defaultTimes,
         "SoldQuantity" : ItemsSold,
-        "BoughtQuantity" : ItemsBought
+        "BoughtQuantity" : ItemsBought,
+        "InteractorList": sorted(InteractorList)
     }
     return stats, newItemList
 
 
 @permission_level_required(0)
-@app.route('/shop/time/<username>/<shopID>/<days>')
-def ShopTimeView(username: str, shopID: int, days:int):
+@app.route('/shop/time/<username>/<shopID>/<days>', defaults = {'filterUser' : None})
+@app.route('/shop/time/<username>/<shopID>/<days>/<filterUser>')
+
+def ShopTimeView(username: str, shopID: int, days:int, filterUser: str | None):
     shopID = int(shopID)
     shopName = None
     if shopID == 0:
@@ -102,7 +110,7 @@ def ShopTimeView(username: str, shopID: int, days:int):
             return redirect(url_for("ShopViewShops"))
         else:
             if hasAccessToShop(user.username, user.staffMembers):
-                stats, newItemList = ShopTime(days, user.username, 0)
+                stats, newItemList = ShopTime(days, user.username, 0, filterUser)
             else:
                 flash("Shop does not exist.")
                 return redirect(url_for("ShopViewShops"))
@@ -114,11 +122,11 @@ def ShopTimeView(username: str, shopID: int, days:int):
         else:
             if hasAccessToShop(shop.owner, shop.staffMembers):
                 shopName = shop.name
-                stats, newItemList = ShopTime(days, username, shopID)
+                stats, newItemList = ShopTime(days, username, shopID, filterUser)
             else:
                 flash("Shop does not exist.")
                 return redirect(url_for("ShopViewShops"))
-    return render_template("shopStuff/index.html", stats = stats, ItemList = newItemList, shopName = shopName, shopID = shopID, username = username)
+    return render_template("shopStuff/index.html", stats = stats, ItemList = newItemList, shopName = shopName, shopID = shopID, username = username, filterUser = filterUser)
 
 
 def ShopTransactions(username, shopID):
