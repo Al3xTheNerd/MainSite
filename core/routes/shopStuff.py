@@ -36,7 +36,7 @@ def ShopTime(days, username, shopID, filterUser: None | str = None):
     for item in itemList:
         newItemList[item.id] = item
         
-    defaultTimes = [3, 7, 14, 21, 28, 30]
+    defaultTimes = [3, 7, 14, 21, 28, 30, 60, 180, 365]
     EpochTimeFrame = int(time.time()*1000) - (24*int(days)*60*60*1000)
     
     PeopleWhoSoldTheMost = {}
