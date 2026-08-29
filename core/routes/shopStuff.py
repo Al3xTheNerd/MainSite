@@ -508,8 +508,8 @@ def hook():
         match message["type"]:
             case "to":
                 
-                pattern = r"(\w+)\s+sold\s+(\d+)\s+(.+?)\s+to your shop for (?:\{3\}|\$([\d,]+(?:\.\d{1,2})?))\."
-                #pattern = r"(\w+)\s+sold\s+(\d+)\s+(.+?)\s+to your shop\."
+                #pattern = r"(\w+)\s+sold\s+(\d+)\s+(.+?)\s+to your shop for (?:\{3\}|\$([\d,]+(?:\.\d{1,2})?))\."
+                pattern = r"(\w+)\s+sold\s+(\d+)\s+(.+?)\s+to your shop\."
                 match = re.search(pattern, message["message"])
                 
                 if match:
