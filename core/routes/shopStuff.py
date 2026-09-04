@@ -4,10 +4,13 @@ from core.decorators.auth import permission_level_required
 from flask_login import current_user
 from typing import List, Dict, Any
 import re
-from core.models.items import Items
-from core.models.shopLogs import ShopLogs
-from core.models.user import User
-from core.models.shops import Shops
+from core.models import (
+    Items,
+    ShopLogs,
+    User,
+    Shops,
+    Outs
+)
 
 defaultShopName = "Default (Unsorted)"
 
@@ -173,6 +176,67 @@ def ShopTransactionsView(username, shopID):
     flash("Shop does not exist.")
     return redirect(url_for("index"))
 
+def ShopOuts(username, shopID):
+    confirmedOuts: List[Outs] = Outs.query.filter_by(ShopOwner=username).all()
+    itemList: List[Items] = Items.query.filter_by(ShopOwner=username, Shop=shopID).all()
+    newItemList = {item.id: item for item in itemList}
+    confirmedOutsForCurrentShop = [out for out in confirmedOuts if out.Item in newItemList]
+    confirmedOutsForCurrentShop.reverse()
+    estimatedOuts = [item for item in itemList if item.StockLevel == 0]
+    if len(estimatedOuts) == len(itemList):
+        estimatedOuts = []
+    return confirmedOutsForCurrentShop, estimatedOuts, newItemList
+
+@permission_level_required(0)
+@app.route('/shop/outs/<username>/<shopID>')
+def ShopOutsView(username, shopID):
+    shopID = int(shopID)
+    if shopID == 0:
+        shopName = defaultShopName
+        user = User.query.filter(User.username == username).one_or_none()
+        if not isinstance(user, User):
+            flash("Shop does not exist.")
+            return redirect(url_for("ShopViewShops"))
+        else:
+            staffList = user.staffMembers
+    else:
+        shop = Shops.query.filter(Shops.owner == username, Shops.id == shopID).one_or_none()
+        if not isinstance(shop, Shops):
+            flash("Shop does not exist.")
+            return redirect(url_for("ShopViewShops"))
+        else:
+            shopName = shop.name
+            staffList = shop.staffMembers
+    if hasAccessToShop(username, staffList):
+        ConfirmedOuts, EstimatedOuts, newItemList = ShopOuts(username, shopID)
+        if username == current_user.username:
+            isOwn = True
+        else:
+            isOwn = False
+        
+        return render_template("shopStuff/outOfStocks.html", EstimatedOuts=EstimatedOuts, ConfirmedOuts=ConfirmedOuts, ItemList = newItemList, shopOwner = username, shopName= shopName, isOwn = isOwn, shopID = shopID)
+    flash("Shop does not exist.")
+    return redirect(url_for("ShopViewShops"))
+
+@permission_level_required(10)
+@app.route('/shop/clearOut/<username>/<shopID>/<outID>', methods=['GET'])
+def ShopClearOut(username, shopID, outID):
+    out: Outs | None = Outs.query.filter(Outs.id == outID).one_or_none()
+    if isinstance(out, Outs):
+        if out.ShopOwner == current_user.username:
+            db.session.commit()
+            res = Outs.query.filter(Outs.id == outID).delete()
+            if res > 0:
+                flash(f"Out alert cleared.")
+            else:
+                flash(f"Something went wrong.")
+            return redirect(url_for("ShopOutsView", username = username, shopID = shopID))
+        else:
+            flash("This out does not belong to your shops. Please try again.")
+            return redirect(url_for("ShopViewShops"))
+    else:
+        flash("This out does not exist. Please try again.")
+        return redirect(url_for("ShopViewShops"))
 
 @permission_level_required(10)
 @app.route('/shop/items/<username>/<shopID>')
@@ -241,8 +305,12 @@ def ShopManageItem_POST(itemID):
             shop = int(request.form.get("Shop", 0))
             
             item.Shop = shop
-            item.BuyPrice = buyPrice
-            item.SellPrice = sellPrice
+            try:
+                item.BuyPrice = float(buyPrice) # type:ignore
+            except: pass
+            try:
+                item.SellPrice = float(sellPrice) # type:ignore
+            except: pass
             item.StockLevel = stock
             
             db.session.commit()
@@ -436,7 +504,7 @@ def ShopViewShops():
     return render_template("shopStuff/others_list.html", ShopList = shopsToShow)
 
 
-def getOrCreateListing(ItemName: str, Action: str, Amount: int, PricePerItem: float | None = None, username = None) -> Items:
+def getOrCreateListing(ItemName: str, Action: str | None, Amount: int, PricePerItem: float | None = None, username = None) -> Items:
     if PricePerItem:
         UntaxedPrice = round(PricePerItem / 0.99, 2)
     item: Items | None = Items.query.filter_by(Name = ItemName, ShopOwner = username).first()
@@ -463,6 +531,8 @@ def getOrCreateListing(ItemName: str, Action: str, Amount: int, PricePerItem: fl
                 item.StockLevel = 0
         case "set":
             item.StockLevel = Amount
+        case None:
+            pass
     if PricePerItem:
         item.SellPrice = UntaxedPrice # type: ignore
     db.session.commit()
@@ -532,6 +602,17 @@ def hook():
                     dollars = float(match.group(4).replace(',', ''))
                     item = getOrCreateListing(match.group(3) + appendStr, "subtract", quantity, dollars/quantity, username=message["username"])
                     db.session.add(ShopLogs(Type = "from", Interactor = name, Quantity = quantity, Item = item.id, Money = dollars, TimeStamp = message["time"], ShopOwner=message["username"])) # type: ignore
+            case "out":
+                pattern = r"Your shop at (-?\d+),\s*(-?\d+),\s*(-?\d+) has run out of (.+)!"
+                match = re.search(pattern, message["message"])
+                if match:
+                    x = int(match.group(1))
+                    y = int(match.group(2))
+                    z = int(match.group(3))
+                    item = getOrCreateListing(match.group(4) + appendStr, None, 0, None, message["username"])
+                    db.session.add(
+                        Outs(Item = item.id, XCoord = x, YCoord = y, ZCoord = z, ShopOwner = message["username"])) # type: ignore
+                    print(f"Shop at {x}, {y}, {z} ran out of {item}")
             case _:
                 pass
         db.session.commit()

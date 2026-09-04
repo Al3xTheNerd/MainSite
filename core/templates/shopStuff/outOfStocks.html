@@ -1,0 +1,98 @@
+{% set fixed_height = false %}
+{% set show_alerts = true %}
+{% extends "core_layout.html" %}
+{% block extra_styles %}
+<link href="https://cdn.datatables.net/v/bs5/dt-2.3.8/datatables.min.css" rel="stylesheet" integrity="sha384-UclYA0TM50oo4lzbw9CylacalWmOxu+RipNT22BDrqDD9v2F0M+262NAs03TOfhw" crossorigin="anonymous">
+{% endblock %}
+{% block content %}
+
+<div class="row gx-3 gy-3 mb-3 mt-0">
+    <div class="col">
+        <div class="card h-100 text-white bg-dark border-white">
+            <h3 class="card-header border-white">Out of Stocks <code>{{shopOwner}} - {{shopName}}</code></h3>
+            <div class="card-body">
+                <p class="card-text">Contains a list of every unacknowledged out of stock alert.</p>
+                <p class="card-text"><code>Confirmed Outs</code>: These are based on the out of stock notifications shown in-game. They may be innaccurate if you have hoppers feeding into the shop, but must be cleared manually (or ignored, I guess).</p>
+                <p class="card-text"><code>Estimated Outs</code>: These are based on the on-hand tracked by this website. If you do not utilize buy shops (where you buy items from the customer), then these will be innaccurate unless you manually enter on-hands in the Item List screen.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row gx-3 gy-3">
+    <div class="col-lg-6">
+        <div class="card h-100 text-white bg-dark border-white">
+            <h3 class="card-header border-white">Confirmed Outs</h3>
+            <div class="card-body">
+                <table class="table text-white" id="confirmedOuts">
+                    <thead>
+                        <tr>
+                            <th scope="col">Out ID</th>
+                            <th scope="col">Item</th>
+                            <th scope="col">Coords</th>
+                            {% if isOwn%}
+                            <th scope="col">Clear Out</th>
+                            <th scope="col">Edit Item</th>
+                            {% endif %}
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for out in ConfirmedOuts %}
+                        <tr>
+                            <th scope="col">{{out.id}}</th>
+                            <td scope="col">{{ItemList[out.Item].Name}}</td>
+                            <td scope="col">{{out.x}}, {{out.y}}, {{out.z}}</td>
+                            {% if isOwn %}
+                            <td scope="col"><a href="{{url_for('ShopClearOut', username = shopOwner, shopID = shopID, outID = out.id)}}">Clear Alert</a></td>
+                            <td scope="col"><a href="{{url_for('ShopManageItem', itemID = out.Item)}}">Edit Item</a></td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100 text-white bg-dark border-white">
+            <h3 class="card-header border-white">Estimated Outs</h3>
+            <div class="card-body">
+                <table class="table text-white" id="estimatedOuts">
+                    <thead>
+                        <tr>
+                            <th scope="col">Item</th>
+                            {% if isOwn %}
+                            <th scope="col">Edit Item</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in EstimatedOuts %}
+                        <tr>
+                            <th scope="col">{{item.Name}}</th>
+                            {% if isOwn %}
+                            <td scope="col"><a href="{{url_for('ShopManageItem', itemID = item.id)}}">Edit Item</a></td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.3.8/datatables.min.js" integrity="sha384-pszF7QvU8ChuuhQBJGIvzVEcojfpYqQOVG2PaXES4M4Mcn+1CqfQ4r1b/mpdtn/6" crossorigin="anonymous"></script>
+<script>
+new DataTable('#confirmedOuts', {
+    order: []
+})
+new DataTable('#estimatedOuts', {
+    order: []
+})
+
+</script>
+
+{% endblock %}
+
