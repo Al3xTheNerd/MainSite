@@ -176,13 +176,13 @@ def ShopTransactionsView(username, shopID):
     flash("Shop does not exist.")
     return redirect(url_for("index"))
 
-def ShopOuts(username, shopID):
+def ShopOuts(username, shopID, maxInStock):
     confirmedOuts: List[Outs] = Outs.query.filter_by(ShopOwner=username).all()
     itemList: List[Items] = Items.query.filter_by(ShopOwner=username, Shop=shopID).all()
     newItemList = {item.id: item for item in itemList}
     confirmedOutsForCurrentShop = [out for out in confirmedOuts if out.Item in newItemList]
     confirmedOutsForCurrentShop.reverse()
-    estimatedOuts = [item for item in itemList if item.StockLevel == 0]
+    estimatedOuts = [item for item in itemList if item.StockLevel <= int(maxInStock)]
     if len(estimatedOuts) == len(itemList):
         estimatedOuts = []
     return confirmedOutsForCurrentShop, estimatedOuts, newItemList
@@ -208,13 +208,45 @@ def ShopOutsView(username, shopID):
             shopName = shop.name
             staffList = shop.staffMembers
     if hasAccessToShop(username, staffList):
-        ConfirmedOuts, EstimatedOuts, newItemList = ShopOuts(username, shopID)
+        ConfirmedOuts, EstimatedOuts, newItemList = ShopOuts(username, shopID, 0)
         if username == current_user.username:
             isOwn = True
         else:
             isOwn = False
         
         return render_template("shopStuff/outOfStocks.html", EstimatedOuts=EstimatedOuts, ConfirmedOuts=ConfirmedOuts, ItemList = newItemList, shopOwner = username, shopName= shopName, isOwn = isOwn, shopID = shopID)
+    flash("Shop does not exist.")
+    return redirect(url_for("ShopViewShops"))
+
+@permission_level_required(0)
+@app.route('/shop/lowStock/<username>/<shopID>/<maxInStock>')
+def ShopLowStockView(username, shopID, maxInStock):
+    defaultLevels = [16, 32, 64, 128, 256, 512, 1024, 1728, 2048, 3456, 6912]
+    shopID = int(shopID)
+    if shopID == 0:
+        shopName = defaultShopName
+        user = User.query.filter(User.username == username).one_or_none()
+        if not isinstance(user, User):
+            flash("Shop does not exist.")
+            return redirect(url_for("ShopViewShops"))
+        else:
+            staffList = user.staffMembers
+    else:
+        shop = Shops.query.filter(Shops.owner == username, Shops.id == shopID).one_or_none()
+        if not isinstance(shop, Shops):
+            flash("Shop does not exist.")
+            return redirect(url_for("ShopViewShops"))
+        else:
+            shopName = shop.name
+            staffList = shop.staffMembers
+    if hasAccessToShop(username, staffList):
+        ConfirmedOuts, EstimatedOuts, newItemList = ShopOuts(username, shopID, maxInStock)
+        if username == current_user.username:
+            isOwn = True
+        else:
+            isOwn = False
+        
+        return render_template("shopStuff/lowStocks.html", EstimatedOuts=EstimatedOuts, ItemList = newItemList, shopOwner = username, shopName= shopName, isOwn = isOwn, shopID = shopID, defaultLevels = defaultLevels)
     flash("Shop does not exist.")
     return redirect(url_for("ShopViewShops"))
 

@@ -1,0 +1,68 @@
+{% set fixed_height = false %}
+{% set show_alerts = true %}
+{% extends "core_layout.html" %}
+{% block extra_styles %}
+<link href="https://cdn.datatables.net/v/bs5/dt-2.3.8/datatables.min.css" rel="stylesheet" integrity="sha384-UclYA0TM50oo4lzbw9CylacalWmOxu+RipNT22BDrqDD9v2F0M+262NAs03TOfhw" crossorigin="anonymous">
+{% endblock %}
+{% block content %}
+
+<div class="row gx-3 gy-3 mb-3 mt-0">
+    <div class="col">
+        <div class="card h-100 text-white bg-dark border-white">
+            <h3 class="card-header border-white">Out of Stocks <code>{{shopOwner}} - {{shopName}}</code></h3>
+            <div class="card-body">
+                <p class="card-text">Contains a list of every item with low stock. (If you have a 0 onhand for every item in the shop, it will not show anything here.)</p>
+                <p class="card-text">Use the buttons below to set the minimum threshold to be considered 'low stock'.</p>
+            </div>
+            <div class="card-footer border-white">
+                {% for stockLevel in defaultLevels %}
+                <a href="/shop/lowStock/{{shopOwner}}/{{shopID}}/{{stockLevel}}"
+                    class="btn btn-secondary">{{stockLevel}} </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row gx-3 gy-3">
+    <div class="col-12">
+        <div class="card h-100 text-white bg-dark border-white">
+            <h3 class="card-header border-white">Low Stock Alerts</h3>
+            <div class="card-body">
+                <table class="table text-white" id="lowStock">
+                    <thead>
+                        <tr>
+                            <th scope="col">Item</th>
+                            <th scope="col">Stock Level</th>
+                            {% if isOwn %}
+                            <th scope="col">Edit Item</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in EstimatedOuts %}
+                        <tr>
+                            <th scope="col">{{item.Name}}</th>
+                            <td scope="col">{{item.StockLevel}}</td>
+                            {% if isOwn %}
+                            <td scope="col"><a href="{{url_for('ShopManageItem', itemID = item.id)}}">Edit Item</a></td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.3.8/datatables.min.js" integrity="sha384-pszF7QvU8ChuuhQBJGIvzVEcojfpYqQOVG2PaXES4M4Mcn+1CqfQ4r1b/mpdtn/6" crossorigin="anonymous"></script>
+<script>
+new DataTable('#lowStock', {
+    order: []
+})
+
+</script>
+
+{% endblock %}
+

@@ -31,6 +31,7 @@
                             <th scope="col">Past Transactions</th>
                             <th scope="col">Item List</th>
                             <th scope="col">Out of Stocks</th>
+                            <th scope="col">Low Stock List</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -43,6 +44,7 @@
                                 <td scope="col"><a href="{{url_for('ShopTransactionsView', username = shop.username, shopID = 0)}}">Past Transactions</a></td>
                                 <td scope="col"><a href="{{url_for('ShopItems', username = shop.username, shopID = 0)}}">Item List</a></td>
                                 <td scope="col"><a href="{{url_for('ShopOutsView', username = shop.username, shopID = 0)}}">Out of Stocks</a></td>
+                                <td scope="col"><a href="{{ url_for('ShopLowStockView', username=current_user.username, shopID = 0, maxInStock = 1728)}}">Low Stock List</a></td>
                             {% else %}
                                 <th scope="col">{{shop.owner}}</th>
                                 <th scope="col">{{shop.name}}</th>
@@ -50,6 +52,7 @@
                                 <td scope="col"><a href="{{url_for('ShopTransactionsView', username = shop.owner, shopID = shop.id)}}">Past Transactions</a></td>
                                 <td scope="col"><a href="{{url_for('ShopItems', username = shop.owner, shopID = shop.id)}}">Item List</a></td>
                                 <td scope="col"><a href="{{url_for('ShopOutsView', username = shop.owner, shopID = shop.id)}}">Out of Stocks</a></td>
+                                <td scope="col"><a href="{{ url_for('ShopLowStockView', username=current_user.username, shopID = shop.id, maxInStock = 1728)}}">Low Stock List</a></td>
                             {% endif %}
                         </tr>
                         {% endfor %}
