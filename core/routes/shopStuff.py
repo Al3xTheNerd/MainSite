@@ -140,9 +140,9 @@ def ShopTransactions(username, shopID):
         if log.Item in newItemList:
             match log.Type:
                 case "to":
-                    log.Type = "Buy"
+                    log.Type = "Sold to Shop"
                 case "from":
-                    log.Type = "Sell"
+                    log.Type = "Purchased from Shop"
             newLogs.append(log)
     newLogs.reverse()
     return newLogs, newItemList

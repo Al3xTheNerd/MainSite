@@ -27,13 +27,13 @@
             <div class="card-body">
                 <h4 class="card-title">Last {{stats["days"]}} Days Financials</h4>
                 <ul>
-                    <li>Product Sold: ${{stats["sold"]}}</li>
-                    <li>Product Purchased: ${{stats["bought"]}}</li>
+                    <li>Product Sold to customers: ${{stats["sold"]}}</li>
+                    <li>Product Purchased by you: ${{stats["bought"]}}</li>
                     <li>Net Profit: ${{stats["total"]}}</li>
                 </ul>
                 <ul>
-                    <li>Total Items Sold: {{stats["SoldQuantity"]}}</li>
-                    <li>Total Items Bought: {{stats["BoughtQuantity"]}}</li>
+                    <li>Total Items Sold to customers: {{stats["SoldQuantity"]}}</li>
+                    <li>Total Items Bought by you: {{stats["BoughtQuantity"]}}</li>
                 </ul>
             </div>
         </div>
@@ -56,7 +56,7 @@
     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
         <div class="card h-100 text-white bg-dark border-white">
             <div class="card-body">
-                <h4 class="card-title">Last {{stats["days"]}} Days Who sold you the most items? (quantity)</h4>
+                <h4 class="card-title">Last {{stats["days"]}} Days Who did you purchase the most items from? (quantity)</h4>
                 <ul>
                     {% for person, amount in stats["PeopleWhoSoldTheMost"].items() %}
                     <li>{{person}} - {{amount}} items</li>
@@ -83,7 +83,7 @@
     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
         <div class="card h-100 text-white bg-dark border-white">
             <div class="card-body">
-                <h4 class="card-title">Last {{stats["days"]}} Days Who sold you the most items? (value)</h4>
+                <h4 class="card-title">Last {{stats["days"]}} Days Who did you purchase the most items from? (value)</h4>
                 <ul>
                     {% for person, amount in stats["PeopleWhoSoldTheMostValue"].items() %}
                     <li>{{person}} - ${{amount}}</li>
@@ -110,7 +110,7 @@
     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
         <div class="card h-100 text-white bg-dark border-white">
             <div class="card-body">
-                <h4 class="card-title">Last {{stats["days"]}} Days What did you buy the most of?</h4>
+                <h4 class="card-title">Last {{stats["days"]}} Days What did you purchase the most of?</h4>
                 <ul>
                     {% for item, amount in stats["MostPurchasedItems"].items() %}
                     <li>{{ItemList[item].Name}} - {{amount}}</li>
@@ -139,7 +139,7 @@
     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
         <div class="card h-100 text-white bg-dark border-white">
             <div class="card-body">
-                <h4 class="card-title">Last {{stats["days"]}} Days Who bought the most from you? (quantity)</h4>
+                <h4 class="card-title">Last {{stats["days"]}} Days Who did you sell the most to? (quantity)</h4>
                 <ul>
                     {% for person, amount in stats["PeopleWhoBoughtTheMost"].items() %}
                     <li>{{person}} - {{amount}} items</li>
@@ -166,7 +166,7 @@
     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
         <div class="card h-100 text-white bg-dark border-white">
             <div class="card-body">
-                <h4 class="card-title">Last {{stats["days"]}} Days Who bought the most from you? (value)</h4>
+                <h4 class="card-title">Last {{stats["days"]}} Days Who did you sell the most to? (value)</h4>
                 <ul>
                     {% for person, amount in stats["PeopleWhoBoughtTheMostValue"].items() %}
                     <li>{{person}} - ${{amount}}</li>
