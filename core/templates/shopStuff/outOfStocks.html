@@ -41,7 +41,7 @@
                         <tr>
                             <th scope="col">{{out.id}}</th>
                             <td scope="col">{{ItemList[out.Item].Name}}</td>
-                            <td scope="col">{{out.XCoord}}, {{out.YCoord}}, {{out.ZCoord}}</td>
+                            <td scope="col"><code>{{out.XCoord}}, {{out.YCoord}}, {{out.ZCoord}}</code></td>
                             {% if isOwn %}
                             <td scope="col"><a href="{{url_for('ShopClearOut', username = shopOwner, shopID = shopID, outID = out.id)}}">Clear Alert</a></td>
                             <td scope="col"><a href="{{url_for('ShopManageItem', itemID = out.Item)}}">Edit Item</a></td>
