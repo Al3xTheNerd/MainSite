@@ -139,7 +139,7 @@
     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
         <div class="card h-100 text-white bg-dark border-white">
             <div class="card-body">
-                <h4 class="card-title">Last {{stats["days"]}} Days Who did you sell the most to? (quantity)</h4>
+                <h4 class="card-title">Last {{stats["days"]}} Days Who did you sell the most items to? (quantity)</h4>
                 <ul>
                     {% for person, amount in stats["PeopleWhoBoughtTheMost"].items() %}
                     <li>{{person}} - {{amount}} items</li>
@@ -166,7 +166,7 @@
     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4 col-xxl-3">
         <div class="card h-100 text-white bg-dark border-white">
             <div class="card-body">
-                <h4 class="card-title">Last {{stats["days"]}} Days Who did you sell the most to? (value)</h4>
+                <h4 class="card-title">Last {{stats["days"]}} Days Who did you sell the most items to? (value)</h4>
                 <ul>
                     {% for person, amount in stats["PeopleWhoBoughtTheMostValue"].items() %}
                     <li>{{person}} - ${{amount}}</li>
