@@ -52,7 +52,7 @@
                                 <td scope="col"><a href="{{url_for('ShopTransactionsView', username = shop.owner, shopID = shop.id)}}">Past Transactions</a></td>
                                 <td scope="col"><a href="{{url_for('ShopItems', username = shop.owner, shopID = shop.id)}}">Item List</a></td>
                                 <td scope="col"><a href="{{url_for('ShopOutsView', username = shop.owner, shopID = shop.id)}}">Out of Stocks</a></td>
-                                <td scope="col"><a href="{{ url_for('ShopLowStockView', username=current_user.username, shopID = shop.id, maxInStock = 1728)}}">Low Stock List</a></td>
+                                <td scope="col"><a href="{{ url_for('ShopLowStockView', username=shop.owner, shopID = shop.id, maxInStock = 1728)}}">Low Stock List</a></td>
                             {% endif %}
                         </tr>
                         {% endfor %}
