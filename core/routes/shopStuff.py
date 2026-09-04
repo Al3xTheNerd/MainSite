@@ -227,6 +227,7 @@ def ShopClearOut(username, shopID, outID):
             db.session.commit()
             res = Outs.query.filter(Outs.id == outID).delete()
             if res > 0:
+                db.session.commit()
                 flash(f"Out alert cleared.")
             else:
                 flash(f"Something went wrong.")
