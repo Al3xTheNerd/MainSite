@@ -411,8 +411,9 @@ def ShopBulkChangeStockMetrics(shop: int | None):
     return render_template("shopStuff/bulkStockMetricChanges.html", validItems = validItems, currentShops = shops)
 
 @permission_level_required(10)
+@app.route('/shop/bulkChangeStockMetrics', methods=["POST"], defaults = {'shop' : None})
 @app.route('/shop/bulkChangeStockMetrics', methods=["POST"])
-def ShopBulkChangeStockMetrics_POST():
+def ShopBulkChangeStockMetrics_POST(shop):
     validItems: List[Items] = Items.query.filter(Items.ShopOwner == current_user.username).all()
     lowStock = int(request.form.get('low', 0))
     maxStock = int(request.form.get('max', 0))
