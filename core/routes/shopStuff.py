@@ -412,7 +412,7 @@ def ShopBulkChangeStockMetrics(shop: int | None):
 
 @permission_level_required(10)
 @app.route('/shop/bulkChangeStockMetrics', methods=["POST"], defaults = {'shop' : None})
-@app.route('/shop/bulkChangeStockMetrics', methods=["POST"])
+@app.route('/shop/bulkChangeStockMetrics/<shop>', methods=["POST"])
 def ShopBulkChangeStockMetrics_POST(shop):
     validItems: List[Items] = Items.query.filter(Items.ShopOwner == current_user.username).all()
     lowStock = int(request.form.get('low', 0))
