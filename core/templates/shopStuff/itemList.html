@@ -29,6 +29,9 @@
                             <th scope="col">Sell Price</th>
                             <th scope="col">Buy Price</th>
                             <th scope="col">Estimated Stock</th>
+                            <th scope="col">Low Stock Alert</th>
+                            <th scope="col">Maximum Stock</th>
+                            
                             {% if isOwn %}
                             <th scope="col">Exclude Item</th>
                             <th scope="col">Edit Item</th>
@@ -43,6 +46,8 @@
                             <td scope="col">{{item.SellPrice}}</td>
                             <td scope="col">{{item.BuyPrice}}</td>
                             <td scope="col">{{item.StockLevel}}</td>
+                            <td scope="col">{{item.LowStockAlert}}</td>
+                            <td scope="col">{{item.MaxStock}}</td>
                             {% if isOwn %}
                             <td scope="col"><a href="{{url_for('ShopExcludeItem', itemID = item.id)}}">Exclude Item</a></td>
                             <td scope="col"><a href="{{url_for('ShopManageItem', itemID = item.id)}}">Edit Item</a></td>

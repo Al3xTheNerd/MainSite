@@ -23,6 +23,16 @@
                             , value="{{item.StockLevel}}">
                         <label for="stockGroup">Current Stock (Optional)</label>
                     </div>
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" name='lowStock' id="lowStockAlertGroup" placeholder="Low Stock Alert"
+                            , value="{{item.LowStockAlert}}">
+                        <label for="lowStockAlertGroup">Low Stock Alert</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" name='maxStock' id="maxStockGroup" placeholder="Maximum Stock"
+                            , value="{{item.MaxStock}}">
+                        <label for="maxStockGroup">Maximum Stock</label>
+                    </div>
                     <div class="input-group mb-3">
                         <label class="input-group-text" for="ShopSelectEdit">Shop</label>
                         <select name='Shop' class="form-select" id="ShopSelectEdit">

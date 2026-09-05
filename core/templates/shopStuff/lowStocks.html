@@ -12,14 +12,16 @@
             <h3 class="card-header border-white">Low Stocks <code>{{shopOwner}} - {{shopName}}</code></h3>
             <div class="card-body">
                 <p class="card-text">Contains a list of every item with low stock. (If you have a 0 onhand for every item in the shop, it will not show anything here.)</p>
-                <p class="card-text">Use the buttons below to set the minimum threshold to be considered 'low stock'.</p>
+                <p class="card-text">If any item in the currently browsed shop has Low/Max stock levels set, then it will use those, otherwise it will use the buttons to use a generic minimum stock level.</p>
             </div>
+            {% if not usingMetrics %}
             <div class="card-footer border-white">
                 {% for stockLevel in defaultLevels %}
                 <a href="/shop/lowStock/{{shopOwner}}/{{shopID}}/{{stockLevel}}"
                     class="btn btn-secondary">{{stockLevel}} </a>
                 {% endfor %}
             </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -33,6 +35,9 @@
                         <tr>
                             <th scope="col">Item</th>
                             <th scope="col">Stock Level</th>
+                            <th scope="col">Low Stock Alert</th>
+                            <th scope="col">Maximum Stock</th>
+                            
                             {% if isOwn %}
                             <th scope="col">Edit Item</th>
                             {% endif %}
@@ -43,6 +48,8 @@
                         <tr>
                             <th scope="col">{{item.Name}}</th>
                             <td scope="col">{{item.StockLevel}}</td>
+                            <td scope="col">{{item.LowStockAlert}}</td>
+                            <td scope="col">{{item.MaxStock}}</td>
                             {% if isOwn %}
                             <td scope="col"><a href="{{url_for('ShopManageItem', itemID = item.id)}}">Edit Item</a></td>
                             {% endif %}

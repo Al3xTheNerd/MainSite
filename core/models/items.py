@@ -9,3 +9,5 @@ class Items(db.Model):
     ShopOwner = db.Column(db.String(20)) 
     Excluded = db.Column(db.Integer())
     Shop = db.Column(db.Integer())
+    MaxStock = db.Column(db.Integer())
+    LowStockAlert = db.Column(db.Integer())

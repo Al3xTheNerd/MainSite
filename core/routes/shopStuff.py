@@ -218,6 +218,22 @@ def ShopOutsView(username, shopID):
     flash("Shop does not exist.")
     return redirect(url_for("ShopViewShops"))
 
+def LowStock(username, shopID, maxInStock):
+    itemList: List[Items] = Items.query.filter_by(ShopOwner=username, Shop=shopID).all()
+    newItemList = {item.id: item for item in itemList}
+
+    itemsUsingStockLevelMetrics = [item for item in itemList if item.MaxStock != 0 or item.LowStockAlert != 0]
+    if len(itemsUsingStockLevelMetrics) >= 1:
+        estimatedOuts = [item for item in itemList if item.StockLevel < item.LowStockAlert]
+        usingMetrics = True
+    else:
+        estimatedOuts = [item for item in itemList if item.StockLevel <= int(maxInStock)]
+        if len(estimatedOuts) == len(itemList):
+            estimatedOuts = []
+        usingMetrics = False
+            
+    return estimatedOuts, newItemList, usingMetrics
+
 @permission_level_required(0)
 @app.route('/shop/lowStock/<username>/<shopID>/<maxInStock>')
 def ShopLowStockView(username, shopID, maxInStock):
@@ -240,13 +256,13 @@ def ShopLowStockView(username, shopID, maxInStock):
             shopName = shop.name
             staffList = shop.staffMembers
     if hasAccessToShop(username, staffList):
-        ConfirmedOuts, EstimatedOuts, newItemList = ShopOuts(username, shopID, maxInStock)
+        EstimatedOuts, newItemList, usingMetrics = LowStock(username, shopID, maxInStock)
         if username == current_user.username:
             isOwn = True
         else:
             isOwn = False
         
-        return render_template("shopStuff/lowStocks.html", EstimatedOuts=EstimatedOuts, ItemList = newItemList, shopOwner = username, shopName= shopName, isOwn = isOwn, shopID = shopID, defaultLevels = defaultLevels)
+        return render_template("shopStuff/lowStocks.html", EstimatedOuts=EstimatedOuts, ItemList = newItemList, shopOwner = username, shopName= shopName, isOwn = isOwn, shopID = shopID, defaultLevels = defaultLevels, usingMetrics= usingMetrics)
     flash("Shop does not exist.")
     return redirect(url_for("ShopViewShops"))
 
@@ -335,6 +351,9 @@ def ShopManageItem_POST(itemID):
             buyPrice = request.form.get("buyPrice")
             sellPrice = request.form.get("sellPrice")
             stock = request.form.get("stock")
+            lowStock = request.form.get("lowStock")
+            maxStock = request.form.get("maxStock")
+            
             shop = int(request.form.get("Shop", 0))
             
             item.Shop = shop
@@ -344,6 +363,18 @@ def ShopManageItem_POST(itemID):
             try:
                 item.SellPrice = float(sellPrice) # type:ignore
             except: pass
+            if int(lowStock) <= int(maxStock): # type: ignore
+                try:
+                    item.LowStockAlert = int(lowStock) # type: ignore
+                except: pass
+                try:
+                    item.MaxStock = int(maxStock) # type: ignore
+                except: pass
+            else:
+                flash("Could not update Low Stock Alert/Maximum Stock. Low Stock Alert must be less than or equal to Maximum Stock")
+            
+            
+            
             item.StockLevel = stock
             
             db.session.commit()
@@ -367,6 +398,40 @@ def ShopBulkChangeShopsUnsortedOnly():
     validItems = Items.query.filter(Items.ShopOwner == current_user.username, Items.Shop == 0).all()
     shops = currentShopsData()
     return render_template("shopStuff/bulkShopChanges.html", validItems = validItems, currentShops = shops)
+
+@permission_level_required(10)
+@app.route('/shop/bulkChangeStockMetrics', methods=["GET"], defaults = {'shop' : None})
+@app.route('/shop/bulkChangeStockMetrics/<shop>', methods=["GET"])
+def ShopBulkChangeStockMetrics(shop: int | None):
+    if shop:
+        validItems = Items.query.filter(Items.ShopOwner == current_user.username, Items.Shop == shop).all()
+    else:
+        validItems = Items.query.filter(Items.ShopOwner == current_user.username).all()
+    shops = currentShopsData()
+    return render_template("shopStuff/bulkStockMetricChanges.html", validItems = validItems, currentShops = shops)
+
+@permission_level_required(10)
+@app.route('/shop/bulkChangeStockMetrics', methods=["POST"])
+def ShopBulkChangeStockMetrics_POST():
+    validItems: List[Items] = Items.query.filter(Items.ShopOwner == current_user.username).all()
+    lowStock = int(request.form.get('low', 0))
+    maxStock = int(request.form.get('max', 0))
+    if lowStock > maxStock:
+        flash("<code>Low Stock Alert</code> must be less than or equal to the <code>Maximum Stock</code>")
+        return redirect(url_for("ShopBulkChangeStockMetrics")) 
+    items = [int(x) for x in request.form.getlist("items")]
+    changeCounter = 0
+    for item in validItems:
+        if item.id in items:
+            if item.LowStockAlert != lowStock:
+                item.LowStockAlert = lowStock
+                changeCounter += 1
+            if item.MaxStock != maxStock:
+                item.MaxStock = maxStock
+                changeCounter += 1
+    db.session.commit()
+    flash(f"<code>{changeCounter}</code> items swapped to have <code>Low Stock Alert: {lowStock}</code>, <code>Maximum Stock: {maxStock}</code>")
+    return redirect(url_for("ShopBulkChangeStockMetrics"))
 
 @permission_level_required(10)
 @app.route('/shop/bulkChangeShopsUnsortedOnly', methods=["POST"])
@@ -550,6 +615,8 @@ def getOrCreateListing(ItemName: str, Action: str | None, Amount: int, PricePerI
         item.ShopOwner = username
         item.Excluded = 0
         item.Shop = 0 # 0 is default unsorted, can be organized later
+        item.MaxStock = 0
+        item.LowStockAlert = 0
         if PricePerItem:
             item.SellPrice = UntaxedPrice # type: ignore
         db.session.add(item)
