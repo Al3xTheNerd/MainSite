@@ -20,7 +20,7 @@ def sortDict(data: Dict[Any, int | float], reverse: bool = False) -> Dict[Any, i
     return sorted_dict
 
 def hasAccessToShop(shopOwner, staffList) -> bool:
-    if current_user.adminPermissions == 100:
+    if current_user.adminPermissions == 101:
         return True
     if current_user.username == shopOwner:
         return True
