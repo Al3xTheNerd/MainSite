@@ -690,7 +690,6 @@ def hook():
                     money = float(match.group(4))
 
                     item.BuyPrice = round(money/quantity, 2)
-                    print(item.BuyPrice)
                     db.session.add(ShopLogs(Type = "to", Interactor = name, Quantity = quantity, Item = item.id, TimeStamp = message["time"], ShopOwner=message["username"], Money = money)) # type: ignore
             case "from":
                 pattern = r"(\w+)\s+purchased\s+(\d+)\s+(.+?)\s+from your shop, and you earned\s+\$([\d,]+(?:\.\d+)?)"
