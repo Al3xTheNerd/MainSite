@@ -3,6 +3,7 @@ from core import app, db
 from core.decorators.auth import permission_level_required
 from flask_login import current_user
 from typing import List, Dict, Any
+from datetime import date, datetime, time as datetime_time, timedelta, timezone
 import re
 from core.models import (
     Items,
@@ -33,14 +34,23 @@ def hasAccessToShop(shopOwner, staffList) -> bool:
                 return True
     return False
 
-def ShopTime(days, username, shopID, filterUser: None | str = None):
+def ShopTime(days, username, shopID, filterUser: None | str = None,
+             start_date: date | None = None, end_date: date | None = None):
     itemList: List[Items] = Items.query.filter_by(ShopOwner=username, Excluded=0, Shop=shopID).all()
     newItemList = {}
     for item in itemList:
         newItemList[item.id] = item
         
     defaultTimes = [3, 7, 14, 21, 28, 30, 60, 180, 365]
-    EpochTimeFrame = int(time.time()*1000) - (24*int(days)*60*60*1000)
+    if start_date is not None and end_date is not None:
+        EpochTimeFrame = int(datetime.combine(start_date, datetime_time.min, timezone.utc).timestamp() * 1000)
+        # The upper bound is exclusive, so every transaction on the end date is included.
+        EndTimeFrame = int(datetime.combine(end_date, datetime_time.min, timezone.utc).timestamp() * 1000) + 24 * 60 * 60 * 1000
+        period_label = f"{start_date.isoformat()} through {end_date.isoformat()} (UTC)"
+    else:
+        EpochTimeFrame = int(time.time()*1000) - (24*int(days)*60*60*1000)
+        EndTimeFrame = None
+        period_label = f"Last {days} Days"
     
     PeopleWhoSoldTheMost = {}
     PeopleWhoSoldTheMostValue = {}
@@ -50,10 +60,12 @@ def ShopTime(days, username, shopID, filterUser: None | str = None):
     MostPurchasedItems = {}
     MostSoldItems = {}
     
+    log_query = ShopLogs.query.filter(ShopLogs.ShopOwner == username, ShopLogs.TimeStamp >= EpochTimeFrame)
+    if EndTimeFrame is not None:
+        log_query = log_query.filter(ShopLogs.TimeStamp < EndTimeFrame)
     if filterUser:
-        transactionLogs: List[ShopLogs] = ShopLogs.query.filter(ShopLogs.ShopOwner == username, ShopLogs.TimeStamp >= EpochTimeFrame, ShopLogs.Interactor == filterUser).all()
-    else:
-        transactionLogs: List[ShopLogs] = ShopLogs.query.filter(ShopLogs.ShopOwner == username, ShopLogs.TimeStamp >= EpochTimeFrame).all()
+        log_query = log_query.filter(ShopLogs.Interactor == filterUser)
+    transactionLogs: List[ShopLogs] = log_query.all()
     CashSpentOnBuying = 0.0 
     
     CashEarnedFromSelling = 0.0 
@@ -84,6 +96,9 @@ def ShopTime(days, username, shopID, filterUser: None | str = None):
         "sold" : round(CashEarnedFromSelling, 2),
         "total" : NetAmount,
         "days" : days,
+        "start_date": start_date.isoformat() if start_date else None,
+        "end_date": end_date.isoformat() if end_date else None,
+        "period_label": period_label,
         "PeopleWhoSoldTheMost" : sortDict(PeopleWhoSoldTheMost, True),
         "PeopleWhoSoldTheMostValue" : sortDict(PeopleWhoSoldTheMostValue, True),
         "PeopleWhoBoughtTheMost" : sortDict(PeopleWhoBoughtTheMost, True),
@@ -104,6 +119,21 @@ def ShopTime(days, username, shopID, filterUser: None | str = None):
 
 def ShopTimeView(username: str, shopID: int, days:int, filterUser: str | None):
     shopID = int(shopID)
+    start_date = end_date = None
+    start_value = request.args.get("start_date")
+    end_value = request.args.get("end_date")
+    if start_value or end_value:
+        try:
+            if not start_value or not end_value:
+                raise ValueError
+            start_date = date.fromisoformat(start_value)
+            end_date = date.fromisoformat(end_value)
+            if (start_date.isoformat() != start_value or end_date.isoformat() != end_value
+                    or start_date > end_date):
+                raise ValueError
+        except ValueError:
+            flash("Enter a valid start and end date, with the start on or before the end. Showing the selected number of days instead.")
+            start_date = end_date = None
     shopName = None
     if shopID == 0:
         shopName = defaultShopName
@@ -113,7 +143,7 @@ def ShopTimeView(username: str, shopID: int, days:int, filterUser: str | None):
             return redirect(url_for("ShopViewShops"))
         else:
             if hasAccessToShop(user.username, user.staffMembers):
-                stats, newItemList = ShopTime(days, user.username, 0, filterUser)
+                stats, newItemList = ShopTime(days, user.username, 0, filterUser, start_date, end_date)
             else:
                 flash("Shop does not exist.")
                 return redirect(url_for("ShopViewShops"))
@@ -125,11 +155,19 @@ def ShopTimeView(username: str, shopID: int, days:int, filterUser: str | None):
         else:
             if hasAccessToShop(shop.owner, shop.staffMembers):
                 shopName = shop.name
-                stats, newItemList = ShopTime(days, username, shopID, filterUser)
+                stats, newItemList = ShopTime(days, username, shopID, filterUser, start_date, end_date)
             else:
                 flash("Shop does not exist.")
                 return redirect(url_for("ShopViewShops"))
-    return render_template("shopStuff/index.html", stats = stats, ItemList = newItemList, shopName = shopName, shopID = shopID, username = username, filterUser = filterUser)
+    utc_now = datetime.now(timezone.utc)
+    return render_template(
+        "shopStuff/index.html", stats=stats, ItemList=newItemList, shopName=shopName,
+        shopID=shopID, username=username, filterUser=filterUser,
+        current_utc_time=utc_now.strftime("%Y-%m-%d %H:%M:%S UTC"),
+        current_utc_timestamp=int(utc_now.timestamp() * 1000),
+        last_complete_utc_date=(utc_now.date() - timedelta(days=1)).isoformat(),
+        range_is_incomplete=end_date is not None and end_date >= utc_now.date()
+    )
 
 
 def ShopTransactions(username, shopID):
