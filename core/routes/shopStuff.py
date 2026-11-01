@@ -34,6 +34,36 @@ def hasAccessToShop(shopOwner, staffList) -> bool:
                 return True
     return False
 
+def transaction_totals(logs: List[ShopLogs], item_ids: set[int]) -> dict:
+    totals = {"sold": 0.0, "bought": 0.0, "sold_quantity": 0, "bought_quantity": 0, "transactions": 0}
+    for log in logs:
+        if log.Item not in item_ids or log.Type not in ("to", "from"):
+            continue
+        totals["transactions"] += 1
+        if log.Type == "to":
+            totals["bought"] += log.Money or 0
+            totals["bought_quantity"] += log.Quantity or 0
+        elif log.Type == "from":
+            totals["sold"] += log.Money or 0
+            totals["sold_quantity"] += log.Quantity or 0
+    totals["sold"] = round(totals["sold"], 2)
+    totals["bought"] = round(totals["bought"], 2)
+    totals["net"] = round(totals["sold"] - totals["bought"], 2)
+    return totals
+
+def period_logs(username: str, start_ms: int, end_ms: int, filter_user: str | None = None) -> List[ShopLogs]:
+    query = ShopLogs.query.filter(
+        ShopLogs.ShopOwner == username,
+        ShopLogs.TimeStamp >= start_ms,
+        ShopLogs.TimeStamp < end_ms
+    )
+    if filter_user:
+        query = query.filter(ShopLogs.Interactor == filter_user)
+    return query.all()
+
+def utc_datetime_from_ms(timestamp_ms: int) -> datetime:
+    return datetime(1970, 1, 1, tzinfo=timezone.utc) + timedelta(milliseconds=timestamp_ms)
+
 def ShopTime(days, username, shopID, filterUser: None | str = None,
              start_date: date | None = None, end_date: date | None = None):
     itemList: List[Items] = Items.query.filter_by(ShopOwner=username, Excluded=0, Shop=shopID).all()
@@ -48,9 +78,10 @@ def ShopTime(days, username, shopID, filterUser: None | str = None,
         EndTimeFrame = int(datetime.combine(end_date, datetime_time.min, timezone.utc).timestamp() * 1000) + 24 * 60 * 60 * 1000
         period_label = f"{start_date.isoformat()} through {end_date.isoformat()} (UTC)"
     else:
-        EpochTimeFrame = int(time.time()*1000) - (24*int(days)*60*60*1000)
-        EndTimeFrame = None
+        EndTimeFrame = int(time.time() * 1000)
+        EpochTimeFrame = EndTimeFrame - (24 * int(days) * 60 * 60 * 1000)
         period_label = f"Last {days} Days"
+    PreviousStart = EpochTimeFrame - (EndTimeFrame - EpochTimeFrame)
     
     PeopleWhoSoldTheMost = {}
     PeopleWhoSoldTheMostValue = {}
@@ -60,37 +91,98 @@ def ShopTime(days, username, shopID, filterUser: None | str = None,
     MostPurchasedItems = {}
     MostSoldItems = {}
     
-    log_query = ShopLogs.query.filter(ShopLogs.ShopOwner == username, ShopLogs.TimeStamp >= EpochTimeFrame)
-    if EndTimeFrame is not None:
-        log_query = log_query.filter(ShopLogs.TimeStamp < EndTimeFrame)
-    if filterUser:
-        log_query = log_query.filter(ShopLogs.Interactor == filterUser)
-    transactionLogs: List[ShopLogs] = log_query.all()
+    transactionLogs = period_logs(username, EpochTimeFrame, EndTimeFrame, filterUser)
+    previousLogs = period_logs(username, PreviousStart, EpochTimeFrame, filterUser)
+    item_ids = set(newItemList)
     CashSpentOnBuying = 0.0 
     
     CashEarnedFromSelling = 0.0 
     ItemsBought = 0 
     ItemsSold = 0 
     InteractorList = set()
+    item_performance = {}
     for log in transactionLogs:
-        InteractorList.add(log.Interactor)
-        if log.Item not in newItemList.keys():
+        if log.Item not in item_ids or log.Type not in ("to", "from"):
             continue
+        InteractorList.add(log.Interactor)
+        item_row = item_performance.setdefault(log.Item, {
+            "item_id": log.Item, "name": newItemList[log.Item].Name or f"Item #{log.Item}",
+            "sold": 0.0, "bought": 0.0, "sold_quantity": 0,
+            "bought_quantity": 0, "transactions": 0, "previous_sold": 0.0
+        })
+        item_row["transactions"] += 1
         if log.Type == "to":
             if log.Money:
                 CashSpentOnBuying += log.Money
                 PeopleWhoSoldTheMostValue[log.Interactor] = round(PeopleWhoSoldTheMostValue.get(log.Interactor, 0) + log.Money, 2)
+                item_row["bought"] += log.Money
             ItemsBought += log.Quantity
+            item_row["bought_quantity"] += log.Quantity
             PeopleWhoSoldTheMost[log.Interactor] = PeopleWhoSoldTheMost.get(log.Interactor, 0) + log.Quantity
             MostPurchasedItems[log.Item] = MostPurchasedItems.get(log.Item, 0) + log.Quantity
-        else:
+        elif log.Type == "from":
             if log.Money:
                 CashEarnedFromSelling += log.Money
                 PeopleWhoBoughtTheMostValue[log.Interactor] = round(PeopleWhoBoughtTheMostValue.get(log.Interactor, 0) + log.Money, 2)
+                item_row["sold"] += log.Money
             ItemsSold += log.Quantity
+            item_row["sold_quantity"] += log.Quantity
             PeopleWhoBoughtTheMost[log.Interactor] = PeopleWhoBoughtTheMost.get(log.Interactor, 0) + log.Quantity
             MostSoldItems[log.Item] = MostSoldItems.get(log.Item, 0) + log.Quantity
     NetAmount = round(CashEarnedFromSelling - CashSpentOnBuying, 2)
+    previous_totals = transaction_totals(previousLogs, item_ids)
+    current_totals = transaction_totals(transactionLogs, item_ids)
+    for log in previousLogs:
+        if log.Type == "from" and log.Item in item_performance:
+            item_performance[log.Item]["previous_sold"] += log.Money or 0
+    for row in item_performance.values():
+        row["sold"] = round(row["sold"], 2)
+        row["bought"] = round(row["bought"], 2)
+        row["previous_sold"] = round(row["previous_sold"], 2)
+        row["net"] = round(row["sold"] - row["bought"], 2)
+        row["sales_change"] = round(row["sold"] - row["previous_sold"], 2)
+
+    day_ms = 24 * 60 * 60 * 1000
+    period_days = (EndTimeFrame - EpochTimeFrame + day_ms - 1) // day_ms
+    bucket_days = 1 if period_days <= 31 else 7 if period_days <= 180 else 30
+    bucket_ms = bucket_days * day_ms
+    bucket_count = (EndTimeFrame - EpochTimeFrame + bucket_ms - 1) // bucket_ms
+    trend = []
+    for bucket_index in range(bucket_count):
+        bucket_start = EpochTimeFrame + bucket_index * bucket_ms
+        trend.append({
+            "label": utc_datetime_from_ms(bucket_start).strftime(
+                "%b %d, %Y" if start_date is not None else "%b %d, %Y %H:%M"
+            ),
+            "sold": 0.0, "bought": 0.0
+        })
+    for log in transactionLogs:
+        if log.Item not in item_ids or log.Type not in ("to", "from"):
+            continue
+        bucket = trend[(log.TimeStamp - EpochTimeFrame) // bucket_ms]
+        if log.Type == "to":
+            bucket["bought"] += log.Money or 0
+        elif log.Type == "from":
+            bucket["sold"] += log.Money or 0
+    trend_max = max([1.0] + [max(bucket["sold"], bucket["bought"]) for bucket in trend])
+    for index, bucket in enumerate(trend):
+        bucket["sold"] = round(bucket["sold"], 2)
+        bucket["bought"] = round(bucket["bought"], 2)
+        bucket["x"] = round(40 + (index + 0.5) * 720 / len(trend), 1)
+        bucket["sold_y"] = round(190 - bucket["sold"] * 160 / trend_max, 1)
+        bucket["bought_y"] = round(190 - bucket["bought"] * 160 / trend_max, 1)
+
+    comparison = []
+    for label, key in [
+        ("Sales revenue", "sold"), ("Purchases", "bought"),
+        ("Net cash flow", "net"), ("Items sold", "sold_quantity"),
+        ("Items purchased", "bought_quantity"), ("Transactions", "transactions")
+    ]:
+        comparison.append({
+            "label": label, "money": key in ("sold", "bought", "net"),
+            "current": current_totals[key], "previous": previous_totals[key],
+            "change": round(current_totals[key] - previous_totals[key], 2)
+        })
     stats = {
         "bought" : round(CashSpentOnBuying, 2),
         "sold" : round(CashEarnedFromSelling, 2),
@@ -99,6 +191,16 @@ def ShopTime(days, username, shopID, filterUser: None | str = None,
         "start_date": start_date.isoformat() if start_date else None,
         "end_date": end_date.isoformat() if end_date else None,
         "period_label": period_label,
+        "period_start_ms": EpochTimeFrame,
+        "period_end_ms": EndTimeFrame,
+        "previous_start_ms": PreviousStart,
+        "previous_label": f"{utc_datetime_from_ms(PreviousStart):%Y-%m-%d %H:%M} to {utc_datetime_from_ms(EpochTimeFrame):%Y-%m-%d %H:%M} UTC",
+        "transaction_count": current_totals["transactions"],
+        "comparison": comparison,
+        "item_performance": sorted(item_performance.values(), key=lambda row: (-row["sold"], -row["transactions"], row["name"])),
+        "trend": trend,
+        "trend_granularity": ("Daily" if start_date is not None else "24-hour") if bucket_days == 1 else "7-day" if bucket_days == 7 else "30-day",
+        "trend_scale_max": round(trend_max, 2),
         "PeopleWhoSoldTheMost" : sortDict(PeopleWhoSoldTheMost, True),
         "PeopleWhoSoldTheMostValue" : sortDict(PeopleWhoSoldTheMostValue, True),
         "PeopleWhoBoughtTheMost" : sortDict(PeopleWhoBoughtTheMost, True),
@@ -110,7 +212,45 @@ def ShopTime(days, username, shopID, filterUser: None | str = None,
         "BoughtQuantity" : ItemsBought,
         "InteractorList": sorted(InteractorList)
     }
-    return stats, newItemList
+    return stats, newItemList, transactionLogs, previousLogs
+
+def shop_performance(username: str, shop_names: dict[int, str],
+                     current_logs: List[ShopLogs], previous_logs: List[ShopLogs]) -> list[dict]:
+    rows = {
+        shop_id: {
+            "shop_id": shop_id, "name": name, "sold": 0.0, "bought": 0.0,
+            "sold_quantity": 0, "bought_quantity": 0, "transactions": 0,
+            "previous_sold": 0.0
+        }
+        for shop_id, name in shop_names.items()
+    }
+    if not rows:
+        return []
+    items = Items.query.filter(Items.ShopOwner == username, Items.Excluded == 0).all()
+    item_shops = {item.id: item.Shop for item in items if item.Shop in rows}
+    for log in current_logs:
+        shop_id = item_shops.get(log.Item)
+        if shop_id is None or log.Type not in ("to", "from"):
+            continue
+        row = rows[shop_id]
+        row["transactions"] += 1
+        if log.Type == "to":
+            row["bought"] += log.Money or 0
+            row["bought_quantity"] += log.Quantity or 0
+        elif log.Type == "from":
+            row["sold"] += log.Money or 0
+            row["sold_quantity"] += log.Quantity or 0
+    for log in previous_logs:
+        shop_id = item_shops.get(log.Item)
+        if shop_id is not None and log.Type == "from":
+            rows[shop_id]["previous_sold"] += log.Money or 0
+    for row in rows.values():
+        row["sold"] = round(row["sold"], 2)
+        row["bought"] = round(row["bought"], 2)
+        row["previous_sold"] = round(row["previous_sold"], 2)
+        row["net"] = round(row["sold"] - row["bought"], 2)
+        row["sales_change"] = round(row["sold"] - row["previous_sold"], 2)
+    return sorted(rows.values(), key=lambda row: (-row["sold"], row["name"]))
 
 
 @permission_level_required(0)
@@ -119,6 +259,12 @@ def ShopTime(days, username, shopID, filterUser: None | str = None,
 
 def ShopTimeView(username: str, shopID: int, days:int, filterUser: str | None):
     shopID = int(shopID)
+    try:
+        days = int(days)
+        if not 1 <= days <= 3650:
+            raise ValueError
+    except ValueError:
+        return "Invalid number of days.", 400
     start_date = end_date = None
     start_value = request.args.get("start_date")
     end_value = request.args.get("end_date")
@@ -129,10 +275,11 @@ def ShopTimeView(username: str, shopID: int, days:int, filterUser: str | None):
             start_date = date.fromisoformat(start_value)
             end_date = date.fromisoformat(end_value)
             if (start_date.isoformat() != start_value or end_date.isoformat() != end_value
-                    or start_date > end_date):
+                    or start_date < date(1970, 1, 1) or start_date > end_date
+                    or (end_date - start_date).days > 3650):
                 raise ValueError
         except ValueError:
-            flash("Enter a valid start and end date, with the start on or before the end. Showing the selected number of days instead.")
+            flash("Enter start and end dates from 1970 onward, in order and no more than 10 years apart. Showing the selected number of days instead.")
             start_date = end_date = None
     shopName = None
     if shopID == 0:
@@ -143,7 +290,7 @@ def ShopTimeView(username: str, shopID: int, days:int, filterUser: str | None):
             return redirect(url_for("ShopViewShops"))
         else:
             if hasAccessToShop(user.username, user.staffMembers):
-                stats, newItemList = ShopTime(days, user.username, 0, filterUser, start_date, end_date)
+                stats, newItemList, current_logs, previous_logs = ShopTime(days, user.username, 0, filterUser, start_date, end_date)
             else:
                 flash("Shop does not exist.")
                 return redirect(url_for("ShopViewShops"))
@@ -155,10 +302,18 @@ def ShopTimeView(username: str, shopID: int, days:int, filterUser: str | None):
         else:
             if hasAccessToShop(shop.owner, shop.staffMembers):
                 shopName = shop.name
-                stats, newItemList = ShopTime(days, username, shopID, filterUser, start_date, end_date)
+                stats, newItemList, current_logs, previous_logs = ShopTime(days, username, shopID, filterUser, start_date, end_date)
             else:
                 flash("Shop does not exist.")
                 return redirect(url_for("ShopViewShops"))
+    owner = User.query.filter(User.username == username).one_or_none()
+    visible_shops = {}
+    if isinstance(owner, User) and hasAccessToShop(owner.username, owner.staffMembers):
+        visible_shops[0] = defaultShopName
+    for candidate in Shops.query.filter(Shops.owner == username).all():
+        if hasAccessToShop(candidate.owner, candidate.staffMembers):
+            visible_shops[candidate.id] = candidate.name
+    stats["shop_performance"] = shop_performance(username, visible_shops, current_logs, previous_logs)
     utc_now = datetime.now(timezone.utc)
     return render_template(
         "shopStuff/index.html", stats=stats, ItemList=newItemList, shopName=shopName,

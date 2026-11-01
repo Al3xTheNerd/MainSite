@@ -1,6 +1,9 @@
 {% set fixed_height = false %}
 {% set show_alerts = true %}
 {% extends "core_layout.html" %}
+{% block extra_styles %}
+<link href="https://cdn.datatables.net/v/bs5/dt-2.3.8/datatables.min.css" rel="stylesheet" integrity="sha384-UclYA0TM50oo4lzbw9CylacalWmOxu+RipNT22BDrqDD9v2F0M+262NAs03TOfhw" crossorigin="anonymous">
+{% endblock %}
 {% block content %}
 {% set ns = namespace(MostSoldItemsExpand = false, PeopleWhoBoughtTheMostValueExpand = false, PeopleWhoBoughtTheMostExpand = false, MostPurchasedItemsExpand = false, PeopleWhoSoldTheMostValueExpand = false, PeopleWhoSoldTheMostExpand = false) %}
 <div class="row gx-3 gy-3 mb-3 mt-0">
@@ -8,8 +11,8 @@
         <div class="card h-100 text-white bg-dark border-white">
             <h3 class="card-header border-white">General Statistics <code>{{username}} - {{shopName}}</code></h3>
             <div class="card-body">
-                <p class="card-text">Some general information will be shown here.</p>
-                <p class="card-text">Filtered User: <code>{{ filterUser }}</code></p>
+                <p class="card-text">Sales, purchases, trends, and performance for the selected period.</p>
+                <p class="card-text">Filtered user: <code>{{ filterUser or 'All people' }}</code></p>
                 <p class="card-text mb-1">Current UTC time: <time id="utcClock">{{ current_utc_time }}</time></p>
                 <p class="card-text">Latest fully completed UTC date: <strong id="lastCompleteUtcDate">{{ last_complete_utc_date }}</strong></p>
                 {% if range_is_incomplete %}
@@ -49,7 +52,7 @@
                 <ul>
                     <li>Product Sold to customers: ${{stats["sold"]}}</li>
                     <li>Product Purchased by you: ${{stats["bought"]}}</li>
-                    <li>Net Profit: ${{stats["total"]}}</li>
+                    <li>Net cash flow: ${{stats["total"]}}</li>
                 </ul>
                 <ul>
                     <li>Total Items Sold to customers: {{stats["SoldQuantity"]}}</li>
@@ -68,6 +71,99 @@
                     <option value="{{ url_for('ShopTimeView', username=username, shopID=shopID, days=stats['days'], filterUser=name, start_date=stats['start_date'], end_date=stats['end_date']) }}"{%if filterUser == name%} selected{%endif%}>{{name}}</option>
                     {% endfor %}
                 </select>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row gx-3 gy-3 mb-3">
+    <div class="col-12 col-xl-7">
+        <div class="card h-100 text-white bg-dark border-white">
+            <div class="card-body">
+                <h4 class="card-title">{{ stats['trend_granularity'] }} sales and purchases</h4>
+                <p class="card-text">{{ stats['period_label'] }}</p>
+                <div class="d-flex gap-4 mb-2">
+                    <span><span class="text-success">&#9679;</span> Sales revenue</span>
+                    <span><span class="text-warning">&#9679;</span> Purchases</span>
+                </div>
+                <div class="overflow-auto">
+                <svg class="w-100" style="min-width: 640px" viewBox="0 0 800 220" role="img" aria-label="Sales revenue and purchases by {{ stats['trend_granularity']|lower }} interval">
+                    <line x1="40" y1="190" x2="760" y2="190" stroke="#adb5bd" />
+                    <line x1="40" y1="30" x2="760" y2="30" stroke="#495057" stroke-dasharray="4 4" />
+                    <text x="40" y="23" fill="white" font-size="13">${{ stats['trend_scale_max'] }}</text>
+                    <polyline fill="none" stroke="#75b798" stroke-width="3" points="{% for bucket in stats['trend'] %}{{ bucket['x'] }},{{ bucket['sold_y'] }} {% endfor %}" />
+                    <polyline fill="none" stroke="#ffda6a" stroke-width="3" points="{% for bucket in stats['trend'] %}{{ bucket['x'] }},{{ bucket['bought_y'] }} {% endfor %}" />
+                    {% for bucket in stats['trend'] %}
+                    <circle cx="{{ bucket['x'] }}" cy="{{ bucket['sold_y'] }}" r="3" fill="#75b798"><title>{{ bucket['label'] }} sales: ${{ bucket['sold'] }}</title></circle>
+                    <circle cx="{{ bucket['x'] }}" cy="{{ bucket['bought_y'] }}" r="3" fill="#ffda6a"><title>{{ bucket['label'] }} purchases: ${{ bucket['bought'] }}</title></circle>
+                    {% endfor %}
+                    <text x="40" y="215" fill="white" font-size="12">{{ stats['trend'][0]['label'] }}</text>
+                    {% if stats['trend']|length > 1 %}
+                    <text x="760" y="215" fill="white" font-size="12" text-anchor="end">{{ stats['trend'][-1]['label'] }}</text>
+                    {% endif %}
+                </svg>
+                </div>
+                <details class="mt-2">
+                    <summary>View interval values</summary>
+                    <div class="table-responsive mt-2">
+                        <table class="table table-dark table-sm">
+                            <thead><tr><th scope="col">Interval starts (UTC)</th><th scope="col">Sales</th><th scope="col">Purchases</th></tr></thead>
+                            <tbody>
+                                {% for bucket in stats['trend'] %}
+                                <tr><td>{{ bucket['label'] }}</td><td>${{ bucket['sold'] }}</td><td>${{ bucket['bought'] }}</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-5">
+        <div class="card h-100 text-white bg-dark border-white">
+            <div class="card-body">
+                <h4 class="card-title">Compared with the previous period</h4>
+                <p class="card-text">Same duration, immediately before this report: {{ stats['previous_label'] }} (end exclusive).</p>
+                <div class="table-responsive">
+                    <table class="table table-dark table-sm">
+                        <thead><tr><th scope="col">Metric</th><th scope="col">Current</th><th scope="col">Previous</th><th scope="col">Change</th></tr></thead>
+                        <tbody>
+                            {% for metric in stats['comparison'] %}
+                            <tr>
+                                <th scope="row">{{ metric['label'] }}</th>
+                                <td>{% if metric['money'] %}${% endif %}{{ metric['current'] }}</td>
+                                <td>{% if metric['money'] %}${% endif %}{{ metric['previous'] }}</td>
+                                <td>{% if metric['change'] > 0 %}+{% endif %}{% if metric['money'] %}${% endif %}{{ metric['change'] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row gx-3 gy-3 mb-3">
+    <div class="col-12">
+        <div class="card text-white bg-dark border-white">
+            <div class="card-body">
+                <h4 class="card-title">Shop performance</h4>
+                <p class="card-text">Visible shops for {{ username }} during {{ stats['period_label'] }}. Sales change compares with the previous period.</p>
+                <div class="table-responsive">
+                    <table class="table table-dark table-striped table-sm">
+                        <thead><tr><th scope="col">Shop</th><th scope="col">Sales</th><th scope="col">Purchases</th><th scope="col">Net cash flow</th><th scope="col">Items sold</th><th scope="col">Items purchased</th><th scope="col">Transactions</th><th scope="col">Sales change</th></tr></thead>
+                        <tbody>
+                            {% for row in stats['shop_performance'] %}
+                            <tr>
+                                <th scope="row"><a href="{{ url_for('ShopTimeView', username=username, shopID=row['shop_id'], days=stats['days'], filterUser=filterUser, start_date=stats['start_date'], end_date=stats['end_date']) }}">{{ row['name'] }}</a>{% if row['shop_id'] == shopID %} <span class="badge bg-secondary">Current</span>{% endif %}</th>
+                                <td>${{ row['sold'] }}</td><td>${{ row['bought'] }}</td><td>${{ row['net'] }}</td>
+                                <td>{{ row['sold_quantity'] }}</td><td>{{ row['bought_quantity'] }}</td><td>{{ row['transactions'] }}</td>
+                                <td>{% if row['sales_change'] > 0 %}+{% endif %}${{ row['sales_change'] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <small>Historical breakdowns follow each item's current shop assignment and exclusion setting.</small>
             </div>
         </div>
     </div>
@@ -238,6 +334,32 @@
         </div>
     </div>
 </div>
+<div class="row gx-3 gy-3 mb-3">
+    <div class="col-12">
+        <div class="card text-white bg-dark border-white">
+            <div class="card-body">
+                <h4 class="card-title">Item performance: {{ shopName }}</h4>
+                <p class="card-text">Items with transactions during {{ stats['period_label'] }}.</p>
+                <table class="table text-white" id="itemPerformance">
+                    <thead><tr><th scope="col">Item</th><th scope="col">Sales</th><th scope="col">Purchases</th><th scope="col">Net cash flow</th><th scope="col">Units sold</th><th scope="col">Units purchased</th><th scope="col">Transactions</th><th scope="col">Sales change</th></tr></thead>
+                    <tbody>
+                        {% for row in stats['item_performance'] %}
+                        <tr>
+                            <th scope="row">{{ row['name'] }}</th>
+                            <td data-order="{{ row['sold'] }}">${{ row['sold'] }}</td>
+                            <td data-order="{{ row['bought'] }}">${{ row['bought'] }}</td>
+                            <td data-order="{{ row['net'] }}">${{ row['net'] }}</td>
+                            <td>{{ row['sold_quantity'] }}</td><td>{{ row['bought_quantity'] }}</td>
+                            <td>{{ row['transactions'] }}</td>
+                            <td data-order="{{ row['sales_change'] }}">{% if row['sales_change'] > 0 %}+{% endif %}${{ row['sales_change'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
 const serverUtcTimestamp = {{ current_utc_timestamp }};
 const clockStartedAt = performance.now();
@@ -274,6 +396,15 @@ dropdown.addEventListener('change', function() {
   if (url) {
     window.location.href = url;
   }
+});
+</script>
+{% endblock %}
+{% block extra_scripts %}
+<script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.3.8/datatables.min.js" integrity="sha384-pszF7QvU8ChuuhQBJGIvzVEcojfpYqQOVG2PaXES4M4Mcn+1CqfQ4r1b/mpdtn/6" crossorigin="anonymous"></script>
+<script>
+new DataTable('#itemPerformance', {
+    order: [[1, 'desc']],
+    scrollX: true
 });
 </script>
 {% endblock %}
