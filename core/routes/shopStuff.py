@@ -880,7 +880,7 @@ def hook():
                     name = match.group(1)
                     quantity = int(match.group(2))
                     item = getOrCreateListing(match.group(3) + appendStr, "add", quantity, username=message["username"])
-                    money = float(match.group(4))
+                    money = float(match.group(4).replace(',', ''))
 
                     item.BuyPrice = round(money/quantity, 2)
                     db.session.add(ShopLogs(Type = "to", Interactor = name, Quantity = quantity, Item = item.id, TimeStamp = message["time"], ShopOwner=message["username"], Money = money)) # type: ignore
