@@ -31,7 +31,7 @@
                             <th scope="col">Estimated Stock</th>
                             <th scope="col">Low Stock Alert</th>
                             <th scope="col">Maximum Stock</th>
-                            
+                            <th scope="col">% Stock</th>
                             {% if isOwn %}
                             <th scope="col">Exclude Item</th>
                             <th scope="col">Edit Item</th>
@@ -48,6 +48,7 @@
                             <td scope="col">{{item.StockLevel}}</td>
                             <td scope="col">{{item.LowStockAlert}}</td>
                             <td scope="col">{{item.MaxStock}}</td>
+                            <td scope="col">{{((item.StockLevel/item.MaxStock)*100) | round(1) if item.MaxStock else 0}}%</td>
                             {% if isOwn %}
                             <td scope="col"><a href="{{url_for('ShopExcludeItem', itemID = item.id)}}">Exclude Item</a></td>
                             <td scope="col"><a href="{{url_for('ShopManageItem', itemID = item.id)}}">Edit Item</a></td>
