@@ -508,7 +508,19 @@ def ShopItems(username, shopID):
             isOwn = True
         else:
             isOwn = False
-        return render_template("shopStuff/itemList.html", ItemList = itemList, shopName = shopName, username = username, isOwn = isOwn)
+        currentStock = 0
+        totalPossibleStock = 0
+        for item in itemList:
+            currentStock += item.StockLevel
+            totalPossibleStock += item.MaxStock
+        return render_template(
+            "shopStuff/itemList.html", 
+            ItemList = itemList, 
+            shopName = shopName, 
+            username = username, 
+            isOwn = isOwn,
+            totalPossible = totalPossibleStock,
+            currentStock = currentStock)
     flash("Shop does not exist.")
     return redirect(url_for("ShopViewShops"))
 

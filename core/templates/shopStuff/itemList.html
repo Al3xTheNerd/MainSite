@@ -12,6 +12,9 @@
             <h3 class="card-header border-white">Item List <code>{{username}} - {{shopName}}</code></h3>
             <div class="card-body">
                 <p class="card-text">A list of all items you are shown as selling/buying.</p>
+                {% if currentStock > 0 or totalPossible > 0 %}
+                <p class="card-text">Current Overall Stock Levels: <code>{{ "{:,}".format(currentStock)}}</code>/<code>{{"{:,}".format(totalPossible)}}</code> (<code>{{((currentStock/totalPossible)*100) | round(2)}}%</code>)</p>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -48,7 +51,7 @@
                             <td scope="col">{{item.StockLevel}}</td>
                             <td scope="col">{{item.LowStockAlert}}</td>
                             <td scope="col">{{item.MaxStock}}</td>
-                            <td scope="col">{{((item.StockLevel/item.MaxStock)*100) | round(1) if item.MaxStock else 100}}%</td>
+                            <td scope="col">{{((item.StockLevel/item.MaxStock)*100) | round(2) if item.MaxStock else 100}}%</td>
                             {% if isOwn %}
                             <td scope="col"><a href="{{url_for('ShopExcludeItem', itemID = item.id)}}">Exclude Item</a></td>
                             <td scope="col"><a href="{{url_for('ShopManageItem', itemID = item.id)}}">Edit Item</a></td>
